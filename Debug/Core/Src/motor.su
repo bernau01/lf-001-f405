@@ -1,0 +1,7 @@
+../Core/Src/motor.c:10:6:Motor_Init	16	static
+../Core/Src/motor.c:14:6:Motor_SetPWM	16	static
+../Core/Src/motor.c:18:6:Motor_SetVel	16	static
+../Core/Src/motor.c:22:6:Motor_SetPoint	16	static
+../Core/Src/motor.c:33:6:Motor_ApplyPWM	24	static
+../Core/Src/motor.c:49:6:Motor_EnocderRoutine	24	static
+../Core/Src/motor.c:55:6:Motor_ControlRoutine	24	static

@@ -1,0 +1,10 @@
+../Core/Src/sensor.c:31:6:SEN_Init	24	static
+../Core/Src/sensor.c:36:6:SEN_Filter	64	static
+../Core/Src/sensor.c:49:6:SEN_StartReadSensor	8	static
+../Core/Src/sensor.c:53:6:SEN_CallbackRoutine	32	static
+../Core/Src/sensor.c:93:6:SEN_StartAutoCalibration	16	static
+../Core/Src/sensor.c:107:6:SEN_AutoCalibrationRoutine	24	static
+../Core/Src/sensor.c:116:6:SEN_EndAutoCalibration	32	static
+../Core/Src/sensor.c:129:6:SEN_BlackLine	4	static
+../Core/Src/sensor.c:133:6:SEN_WhiteLine	4	static
+../Core/Src/sensor.c:137:6:SEN_Invert	4	static

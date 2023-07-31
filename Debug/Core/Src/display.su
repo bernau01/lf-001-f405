@@ -1,0 +1,15 @@
+../Core/Src/display.c:17:6:DISP_ClearBuff	8	static
+../Core/Src/display.c:21:6:DISP_DrawPixel	24	static
+../Core/Src/display.c:37:9:DISP_DrawChar	32	static
+../Core/Src/display.c:63:6:DISP_DrawText	24	static
+../Core/Src/display.c:69:6:DISP_DrawLogo	16	static
+../Core/Src/display.c:78:6:DISP_DrawLineSimple	40	static
+../Core/Src/display.c:98:6:DISP_DrawRect	32	static
+../Core/Src/display.c:109:6:DISP_FillRect	32	static
+../Core/Src/display.c:150:9:DISP_CountCharString	24	static
+../Core/Src/display.c:156:6:DISP_DisplayText	48	static
+../Core/Src/display.c:218:6:DISP_OLEDUpdate	40	static
+../Core/Src/display.c:231:6:DISP_FillRect2	32	static
+../Core/Src/display.c:240:6:DISP_DisplayFillRect	32	static
+../Core/Src/display.c:256:6:DISP_Test	32	static
+../Core/Src/display.c:306:6:DISP_ClearAll	8	static

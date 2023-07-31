@@ -1,0 +1,6 @@
+../Core/Src/eeprom.c:16:6:EEP_Init	16	static
+../Core/Src/eeprom.c:20:6:EEP_WritePage	40	static
+../Core/Src/eeprom.c:26:6:EEP_WriteMem	32	static
+../Core/Src/eeprom.c:31:6:EEP_ReadPage	40	static
+../Core/Src/eeprom.c:37:6:EEP_ReadMem	32	static
+../Core/Src/eeprom.c:42:9:EEP_ReadyToWrite	8	static

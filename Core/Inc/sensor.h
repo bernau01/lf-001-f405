@@ -13,7 +13,7 @@
 #define SEN_BAR_INC 10
 #define SENSOR_NUM 14
 #define ADC_MAX 4095
-#define TH_CALIB_FACTOR 0.3
+#define TH_CALIB_FACTOR 0.4
 
 #define SENSOR_FLAG_DONE		0x01
 #define SENSOR_FLAG_POLLING		0x02

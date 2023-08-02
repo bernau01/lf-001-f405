@@ -22,7 +22,7 @@ uint16_t sensor_binary;
 
 uint8_t sensor_invert = 0;
 
-#define ADC_FILTER_LEN 20
+#define ADC_FILTER_LEN 10
 uint16_t adc_filter_mem[SENSOR_NUM][ADC_FILTER_LEN];;
 uint8_t adc_filter_pt = 0;
 

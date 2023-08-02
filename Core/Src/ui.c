@@ -133,7 +133,7 @@ void UI_HomeScreenDisplay(uint8_t num_menu, uint8_t cp) {
 UI_Menu_Lists UI_HomeScreen() {
 	static uint8_t num_menu = 0;
 	static uint32_t tick = 0;
-	uint8_t checkpoint = 0;
+	uint8_t checkpoint = num_checkpoint;
 	ui_home_screen:
 	UI_HomeScreenDisplay(num_menu, checkpoint);
 	tick = HAL_GetTick();
@@ -150,7 +150,7 @@ UI_Menu_Lists UI_HomeScreen() {
 //			goto ui_home_screen;
 //		}
 		if(bt & SW_UP_PRESS) {
-			if(num_menu > 0) num_menu--; else num_menu=3;
+			if(num_menu > 0) num_menu--;
 			goto ui_home_screen;
 		}
 		else if(bt & SW_DW_PRESS) {
@@ -311,6 +311,7 @@ DISP_Text_Typedef planset_list_name[4];
 DISP_Text_Typedef planset_list_value[4];
 DISP_Text_Typedef planset_head;
 
+#define ACT_LIST	11
 char* plan_act_lists[] = {
 		"Stop",
 		"Left",
@@ -322,6 +323,7 @@ char* plan_act_lists[] = {
 		"Invert",
 		"Next Plan",
 		"Null",
+		"Backward"
 };
 
 char* plan_mode_lists[] = {
@@ -336,7 +338,6 @@ char* plan_act_value_lists[] = {
 		" Enc Val"
 };
 
-#define ACT_LIST	10
 
 void UI_PlanSetDisplayInit() {
 	planset_list_name[0].origin_x = 6;
@@ -437,10 +438,28 @@ void UI_PlanSetDisplay(int8_t num, Action_typedef* plan, uint8_t num_index) {
 			DISP_DisplayText(&planset_list_value[i], buff);
 			break;
 		case 9:
+			DISP_DisplayText(&planset_list_name[i], " Speed");
+			if(plan->unit_speed == 0) {
+				DISP_DisplayText(&planset_list_value[i], "Default");
+			}
+			else {
+				sprintf(buff, "%i", plan->unit_speed);
+				DISP_DisplayText(&planset_list_value[i], buff);
+			}
+			break;
+		case 10:
+			DISP_DisplayText(&planset_list_name[i], " Color");
+			switch(GET_LINE_COLOR_STAT(plan->status)) {
+			case 0: DISP_DisplayText(&planset_list_value[i], "Idem"); break;
+			case 1: DISP_DisplayText(&planset_list_value[i], "Black"); break;
+			case 2: DISP_DisplayText(&planset_list_value[i], "White"); break;
+			}
+			break;
+		case 11:
 			DISP_DisplayText(&planset_list_name[i], " Insert");
 			DISP_DisplayText(&planset_list_value[i], " ");
 			break;
-		case 10:
+		case 12:
 			DISP_DisplayText(&planset_list_name[i], " Delete");
 			DISP_DisplayText(&planset_list_value[i], " ");
 			break;
@@ -449,12 +468,13 @@ void UI_PlanSetDisplay(int8_t num, Action_typedef* plan, uint8_t num_index) {
 }
 
 UI_Menu_Lists UI_PlanSet() {
-	uint8_t num_index = 0;
+	uint8_t num_index = plan.checkpoint[num_checkpoint];
 	Action_typedef plan_set = GetAction(num_index);
 	int8_t num = -1;
 	uint32_t tick;
 	uint8_t bt, bt2;
 	uint8_t bt_status = 0;
+	uint8_t change_status = 0;
 	plan_set:
 	UI_PlanSetDisplay(num, &plan_set, num_index);
 	tick = HAL_GetTick();
@@ -478,25 +498,14 @@ UI_Menu_Lists UI_PlanSet() {
 			num = -1;
 			return UI_HOMESCREEN;
 		}
-		switch(num) {
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-		case 4:
-		case 5:
-		case 6:
-		case 7:
-		case 8:
-		case 9:
-		case 10:
+		if(num != -1) {
 			if(bt & SW_UP_PRESS) {
-				if(num != 0) num--; else num=10;
+				if(num != 0) num--; else num=12;
 				bt_status = 0;
 				goto plan_set;
 			}
 			else if(bt & SW_DW_PRESS) {
-				if(num != 10) num++; else num=0;
+				if(num != 12) num++; else num=0;
 				bt_status = 0;
 				goto plan_set;
 			}
@@ -511,11 +520,13 @@ UI_Menu_Lists UI_PlanSet() {
 			if(bt & SW_DW_PRESS) {
 				if(plan_set.act != 0) plan_set.act--; else plan_set.act=ACT_LIST-1;
 				bt_status = 0;
+				change_status = 1;
 				goto plan_set;
 			}
 			else if(bt & SW_UP_PRESS) {
 				if(plan_set.act != ACT_LIST-1) plan_set.act++; else plan_set.act=0;
 				bt_status = 0;
+				change_status = 1;
 				goto plan_set;
 			}
 			else if(bt & SW_OK_PRESS) {
@@ -524,20 +535,20 @@ UI_Menu_Lists UI_PlanSet() {
 				goto plan_set;
 			}
 			else if(bt & SW_BK_PRESS) {
-				SetAction(plan_set, num_index);
+				if(change_status == 1) SetAction(plan_set, num_index);
 				num = -1;
 				bt_status = 0;
 				return UI_HOMESCREEN;
 			}
 			else if(bt2 & SW_RG_PRESS) {
-				SetAction(plan_set, num_index);
+				if(change_status == 1) SetAction(plan_set, num_index);
 				if(num_index != max_index) num_index++; else num_index=0;
 				plan_set = GetAction(num_index);
 				bt_status = 1;
 				goto plan_set;
 			}
 			else if(bt2 & SW_LF_PRESS) {
-				SetAction(plan_set, num_index);
+				if(change_status == 1) SetAction(plan_set, num_index);
 				if(num_index != 0) num_index--; else num_index=max_index;
 				plan_set = GetAction(num_index);
 				bt_status = 1;
@@ -548,11 +559,13 @@ UI_Menu_Lists UI_PlanSet() {
 			if(bt & SW_LF_PRESS) {
 				if(plan_set.sen_trig != 0) plan_set.sen_trig--; else plan_set.sen_trig=SENSOR_NUM;
 				bt_status = 0;
+				change_status = 1;
 				goto plan_set;
 			}
 			if(bt & SW_RG_PRESS) {
 				if(plan_set.sen_trig != SENSOR_NUM) plan_set.sen_trig++; else plan_set.sen_trig=0;
 				bt_status = 0;
+				change_status = 1;
 				goto plan_set;
 			}
 			break;
@@ -560,11 +573,13 @@ UI_Menu_Lists UI_PlanSet() {
 			if(bt & SW_LF_PRESS) {
 				if(plan_set.act_mode != 0) plan_set.act_mode--; else plan_set.act_mode=2;
 				bt_status = 0;
+				change_status = 1;
 				goto plan_set;
 			}
 			if(bt & SW_RG_PRESS) {
 				if(plan_set.act_mode != 2) plan_set.act_mode++; else plan_set.act_mode=0;
 				bt_status = 0;
+				change_status = 1;
 				goto plan_set;
 			}
 			break;
@@ -572,11 +587,13 @@ UI_Menu_Lists UI_PlanSet() {
 			if(bt & SW_LF_PRESS) {
 				if(plan_set.act_value != 0) plan_set.act_value--; else plan_set.act_value=255;
 				bt_status = 1;
+				change_status = 1;
 				goto plan_set;
 			}
 			if(bt & SW_RG_PRESS) {
 				if(plan_set.act_value != 255) plan_set.act_value++; else plan_set.act_value=0;
 				bt_status = 1;
+				change_status = 1;
 				goto plan_set;
 			}
 			break;
@@ -584,11 +601,13 @@ UI_Menu_Lists UI_PlanSet() {
 			if(bt & SW_LF_PRESS) {
 				if(plan_set.brake != 0) plan_set.brake--; else plan_set.brake=255;
 				bt_status = 1;
+				change_status = 1;
 				goto plan_set;
 			}
 			if(bt & SW_RG_PRESS) {
 				if(plan_set.brake != 255) plan_set.brake++; else plan_set.brake=0;
 				bt_status = 1;
+				change_status = 1;
 				goto plan_set;
 			}
 			break;
@@ -596,11 +615,13 @@ UI_Menu_Lists UI_PlanSet() {
 			if(bt & SW_LF_PRESS) {
 				if(plan_set.forward_speed != -99) plan_set.forward_speed--; else plan_set.forward_speed=99;
 				bt_status = 1;
+				change_status = 1;
 				goto plan_set;
 			}
 			if(bt & SW_RG_PRESS) {
 				if(plan_set.forward_speed != 99) plan_set.forward_speed++; else plan_set.forward_speed=-99;
 				bt_status = 1;
+				change_status = 1;
 				goto plan_set;
 			}
 			break;
@@ -608,11 +629,13 @@ UI_Menu_Lists UI_PlanSet() {
 			if(bt & SW_LF_PRESS) {
 				if(plan_set.reverse_speed != -99) plan_set.reverse_speed--; else plan_set.reverse_speed=99;
 				bt_status = 1;
+				change_status = 1;
 				goto plan_set;
 			}
 			if(bt & SW_RG_PRESS) {
 				if(plan_set.reverse_speed != 99) plan_set.reverse_speed++; else plan_set.reverse_speed=-99;
 				bt_status = 1;
+				change_status = 1;
 				goto plan_set;
 			}
 			break;
@@ -620,11 +643,13 @@ UI_Menu_Lists UI_PlanSet() {
 			if(bt & SW_LF_PRESS) {
 				if(plan_set.wait_time != 0) plan_set.wait_time--; else plan_set.wait_time=255;
 				bt_status = 1;
+				change_status = 1;
 				goto plan_set;
 			}
 			if(bt & SW_RG_PRESS) {
 				if(plan_set.wait_time != 255) plan_set.wait_time++; else plan_set.wait_time=0;
 				bt_status = 1;
+				change_status = 1;
 				goto plan_set;
 			}
 			break;
@@ -632,11 +657,13 @@ UI_Menu_Lists UI_PlanSet() {
 			if(bt & SW_LF_PRESS) {
 				if(plan_set.boost_time != 0) plan_set.boost_time--; else plan_set.boost_time=255;
 				bt_status = 1;
+				change_status = 1;
 				goto plan_set;
 			}
 			if(bt & SW_RG_PRESS) {
 				if(plan_set.boost_time != 255) plan_set.boost_time++; else plan_set.boost_time=0;
 				bt_status = 1;
+				change_status = 1;
 				goto plan_set;
 			}
 			break;
@@ -644,11 +671,41 @@ UI_Menu_Lists UI_PlanSet() {
 			if(bt & SW_LF_PRESS) {
 				if(plan_set.boost_speed != 0) plan_set.boost_speed--; else plan_set.boost_speed=255;
 				bt_status = 1;
+				change_status = 1;
 				goto plan_set;
 			}
 			if(bt & SW_RG_PRESS) {
 				if(plan_set.boost_speed != 255) plan_set.boost_speed++; else plan_set.boost_speed=0;
 				bt_status = 1;
+				change_status = 1;
+				goto plan_set;
+			}
+			break;
+		case 9:
+			if(bt & SW_LF_PRESS) {
+				if(plan_set.unit_speed != 0) plan_set.unit_speed--; else plan_set.unit_speed=255;
+				bt_status = 1;
+				change_status = 1;
+				goto plan_set;
+			}
+			if(bt & SW_RG_PRESS) {
+				if(plan_set.unit_speed != 255) plan_set.unit_speed++; else plan_set.unit_speed=0;
+				bt_status = 1;
+				change_status = 1;
+				goto plan_set;
+			}
+			break;
+		case 10:
+			if(bt & SW_LF_PRESS) {
+				if(GET_LINE_COLOR_STAT(plan_set.status) != 0) ADD_LINE_COLOR_STAT(plan_set.status,-1) else SET_LINE_COLOR_STAT(plan_set.status,2);
+				bt_status = 1;
+				change_status = 1;
+				goto plan_set;
+			}
+			if(bt & SW_RG_PRESS) {
+				if(GET_LINE_COLOR_STAT(plan_set.status) != 2) ADD_LINE_COLOR_STAT(plan_set.status,1) else SET_LINE_COLOR_STAT(plan_set.status, 0);
+				bt_status = 1;
+				change_status = 1;
 				goto plan_set;
 			}
 			break;
@@ -1266,7 +1323,7 @@ UI_Menu_Lists UI_Run() {
 	Plan_Start();
 	ui_run:
 	Plan_UIRoutine();
-	sprintf(buff, "i:%03i  cp:%02i  Plan%i", plan.checkpoint[num_checkpoint], num_checkpoint, num_plan);
+	sprintf(buff, "i:%03i  cp:%02i  Plan%i", num_index, num_checkpoint, num_plan);
 	DISP_DisplayText(&home_status, buff);
 	sprintf(buff, "Act ~ %s", plan_act_lists[plan_active.act]);
 	DISP_DisplayText(&cp_menu[2], buff);

@@ -41,6 +41,10 @@
 #define STO_FLAG_BUFF_EMPTY 0x02
 #define STO_FLAG_BUFF_END	0x04
 
+#define GET_LINE_COLOR_STAT(x) (x&0x03)
+#define SET_LINE_COLOR_STAT(x,val) {x &=~0x03; x |= (val&0x03);}
+#define ADD_LINE_COLOR_STAT(x,val) {x=(x+val)&0x03;}
+
 typedef struct {
 	uint8_t act;
 	uint8_t sen_trig;
@@ -52,6 +56,8 @@ typedef struct {
 	uint8_t wait_time;
 	uint8_t boost_time;
 	uint8_t boost_speed;
+	uint8_t unit_speed;
+	uint8_t status;
 } Action_typedef;
 
 typedef struct {
@@ -62,6 +68,7 @@ typedef struct {
 	uint8_t turn_speed;
 	float kpid[3];
 	uint8_t status_pid;
+	uint8_t acc;
 } Plan_typedef;
 
 //typedef struct {
@@ -95,7 +102,7 @@ void Storage_GetCheckpoint();
 void Storage_CleanInit();
 void Storage_SetPID();
 void Storage_SetSpeed();
-uint8_t GetActionSequence(uint8_t index);
+uint8_t GetActionSequence();
 void GetActionSequenceRoutine();
 void GetActionSequenceInit(uint8_t num);
 

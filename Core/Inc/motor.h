@@ -27,15 +27,19 @@ typedef struct {
 	float pwm;
 	float pwm_factor;
 	int16_t vel_sp;
+	float vel_factor;
 	float kp;
 	float ki;
 	float last_error;
 	float sum_error;
+	float filter;
+	float filter_alpha;
 } Motor_typedef;
 
 void Motor_SetPoint(Motor_typedef* hmot, float value);
 void Motor_ApplyPWM(Motor_typedef* hmot);
 void Motor_EnocderRoutine(Motor_typedef* hmot, float period);
 void Motor_ControlRoutine(Motor_typedef* hmot, float period);
-
+void Run_MotorRoutine(float period);
+void Run_MotorRoutine2(float _period);
 #endif /* INC_MOTOR_H_ */

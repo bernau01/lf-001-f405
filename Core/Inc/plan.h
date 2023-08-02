@@ -22,6 +22,7 @@
 #define PLAN_INVERT		7
 #define PLAN_NEXT		8
 #define PLAN_NULL		9
+#define PLAN_BACKWARD	10
 
 void Plan_Start();
 void Plan_UIRoutine();

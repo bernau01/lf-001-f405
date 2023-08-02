@@ -22,21 +22,36 @@ void Run_Init() {
 	motor[0].enc_htim = &htim2;
 	motor[0].dir = 1;
 	motor[0].pwm_factor = 0.0095;
+	motor[0].vel_factor = 0.625;
+	motor[0].kp = 2;
+	motor[0].ki = 15;
+	motor[0].filter_alpha = 0.5;
 
 	motor[1].mode = motor[0].mode;
 	motor[1].pwm_htim = &htim3;
 	motor[1].ch1 = TIM_CHANNEL_4;
 	motor[1].ch2 = TIM_CHANNEL_3;
 	motor[1].enc_htim = &htim4;
-	motor[1].dir = 1;
+	motor[1].dir = -1;
 	motor[1].pwm_factor = 0.01;
+	motor[1].vel_factor = 0.625;
+	motor[1].kp = motor[0].kp;
+	motor[1].ki = motor[0].ki;
+	motor[1].filter_alpha = motor[0].filter_alpha;
 }
 
 void Run_MotorRoutine(float period) {
 	Motor_EnocderRoutine(&motor[0], period);
 	Motor_EnocderRoutine(&motor[1], period);
-	Motor_ControlRoutine(&motor[0], period);
-	Motor_ControlRoutine(&motor[1], period);
+//	Motor_ControlRoutine(&motor[0], period);
+//	Motor_ControlRoutine(&motor[1], period);
+}
+
+void Run_MotorRoutine2(float _period) {
+//	Motor_EnocderRoutine(&motor[0], period);
+//	Motor_EnocderRoutine(&motor[1], period);
+	Motor_ControlRoutine(&motor[0], _period);
+	Motor_ControlRoutine(&motor[1], _period);
 }
 
 
@@ -51,7 +66,7 @@ float Run_YawSpeed(float period, uint8_t flag) {
 
 	uint16_t pr_sensor_bin = 0;
 	uint16_t mask = (1<<SENSOR_NUM)-1;
-	if(flag&0x01==0x01) {
+	if((flag&0x01)==0x01) {
 		pr_sensor_bin = (~sensor_binary) & mask;
 	}
 	else {
@@ -89,10 +104,37 @@ float Run_YawSpeed(float period, uint8_t flag) {
 	case B11000000000000: error = 13; break;
 	case B10000000000000: error = 15; break;
 
+	case B00000111111000: error = -1; break;
+	case B00001111111100: error = -1; break;
+	case B00011111111110: error = -1; break;
+
 	case B00001111110000: error = 0; break;
 	case B00011111111000: error = 0; break;
 	case B00111111111100: error = 0; break;
 
+	case B00011111100000: error = 1; break;
+	case B00111111110000: error = 1; break;
+	case B01111111111000: error = 1; break;
+
+	case B11111000000001: error = -2; break;
+
+	case B11100000000001: error = -1; break;
+	case B11110000000011: error = -1; break;
+
+	case B10000000000001: error = 0; break;
+	case B11000000000011: error = 0; break;
+	case B11100000000111: error = 0; break;
+
+	case B10000000000111: error = -1; break;
+	case B11000000001111: error = -1; break;
+
+	case B10000000011111: error = -2; break;
+
+	case B11000011110000: error = -2; break;
+	case B10000111110000: error = -1; break;
+	case B10000111100001: error = 0; break;
+	case B00001111100001: error = 1; break;
+	case B10001111000011: error = 2; break;
 	default: error = last_error;
 	}
 

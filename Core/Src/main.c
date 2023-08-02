@@ -198,16 +198,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		//1ms
 		static int counter = 0;
 		counter++;
-		if((sensor_flag & 2) != 2)
+//		if((sensor_flag & 2) != 2)
 //			HAL_GPIO_WritePin(LED_SEN_EN_GPIO_Port, LED_SEN_EN_Pin, GPIO_PIN_SET);
 //		kp = plan.kpid[0];
 //		ki = plan.kpid[1];
 //		kd = plan.kpid[2];
 //		Run_LineTracing(coy, 0.001, 0);
 		Plan_Main(0.001);
-		Run_MotorRoutine(0.001);
 		if(counter >= 10) {
+			Run_MotorRoutine(0.01);
+			Run_MotorRoutine2(0.01);
 			main_flag |= MAIN_FLAG_DISP;
+			counter = 0;
 		}
 //			// 10ms
 //			Run_MotorRoutine(0.01);

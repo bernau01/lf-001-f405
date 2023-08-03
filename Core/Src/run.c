@@ -12,6 +12,8 @@
 
 Motor_typedef motor[2];
 
+float robot_enc_pos = 0;
+
 void Run_Init() {
 	memset(motor, 0, sizeof(motor[0])*2);
 
@@ -38,11 +40,14 @@ void Run_Init() {
 	motor[1].kp = motor[0].kp;
 	motor[1].ki = motor[0].ki;
 	motor[1].filter_alpha = motor[0].filter_alpha;
+
+	robot_enc_pos = 0;
 }
 
 void Run_MotorRoutine(float period) {
 	Motor_EnocderRoutine(&motor[0], period);
 	Motor_EnocderRoutine(&motor[1], period);
+	robot_enc_pos += (motor[0].enc_vel*0.5) + (motor[1].enc_vel*0.5);
 //	Motor_ControlRoutine(&motor[0], period);
 //	Motor_ControlRoutine(&motor[1], period);
 }

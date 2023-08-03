@@ -207,10 +207,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		Plan_Main(0.001);
 		if(counter >= 10) {
 			Run_MotorRoutine(0.01);
-			Run_MotorRoutine2(0.01);
 			main_flag |= MAIN_FLAG_DISP;
 			counter = 0;
 		}
+			Run_MotorRoutine2(0.001);
 //			// 10ms
 //			Run_MotorRoutine(0.01);
 //			counter = 0;

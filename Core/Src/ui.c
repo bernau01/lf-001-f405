@@ -64,6 +64,7 @@ uint8_t UI_ReadButton() {
 }
 
 DISP_Text_Typedef short_message;
+DISP_Text_Typedef short_message_white;
 
 DISP_Text_Typedef home_menu[4];
 DISP_Text_Typedef home_status;
@@ -84,6 +85,9 @@ void UI_HomeScreenInit() {
 	short_message.size_y = 10;
 	short_message.align_x = DISP_ALIGN_CENTER;
 	short_message.align_y = DISP_ALIGN_CENTER;
+
+	short_message_white = short_message;
+	short_message_white.color = DISP_COLOR_WHITE;
 
 	home_menu[0].origin_x = 14;
 	home_menu[0].origin_y = 38;
@@ -198,6 +202,23 @@ UI_Menu_Lists UI_HomeScreen() {
 	return UI_IDLE;
 }
 
+
+
+void UI_MirroringPlan() {
+	for(int i=0; i<plan.num_action; i++) {
+		Action_typedef temp;
+		temp = GetActionOther(num_plan, i);
+		switch(temp.act) {
+		case 1: temp.act = 2; break;
+		case 2: temp.act = 1; break;
+		case 5: temp.act = 6; break;
+		case 6: temp.act = 5; break;
+		default: continue;
+		}
+		SetActionOther(temp, i);
+	}
+}
+
 DISP_Text_Typedef setting_menu[4];
 DISP_Text_Typedef setting_head;
 char* setting_menus[] = {
@@ -205,7 +226,7 @@ char* setting_menus[] = {
 		" Sensor Calibration",
 		" Checkpoint",
 		" PID",
-		" Mirroring (NOP)",
+		" Mirroring",
 		" Memory",
 		" Hardware (NOP)",
 		" Who Am I?"
@@ -295,6 +316,24 @@ UI_Menu_Lists UI_Setting() {
 				return UI_SET_PID;
 			}
 			break;
+		case 4:
+			if(bt & SW_OK_PRESS) {
+				DISP_DisplayText(&short_message, "Are You Sure?");
+				while(1) {
+					if(bt == UI_ReadButton()) continue;
+					bt = UI_ReadButton();
+					if(bt & SW_OK_PRESS) {
+						DISP_DisplayText(&short_message, "Mirroring...");
+						UI_MirroringPlan();
+						DISP_DisplayText(&short_message, "Mirroring Done!");
+						goto ui_setting;
+					}
+					if(bt & (SW_BK_PRESS||SW_HM_PRESS)) {
+						goto ui_setting;
+					}
+				}
+			}
+			break;
 		case 5:
 			if(bt & SW_OK_PRESS) {
 				return UI_SET_MEM;
@@ -306,12 +345,11 @@ UI_Menu_Lists UI_Setting() {
 }
 
 
-
 DISP_Text_Typedef planset_list_name[4];
 DISP_Text_Typedef planset_list_value[4];
 DISP_Text_Typedef planset_head;
 
-#define ACT_LIST	11
+#define ACT_LIST	12
 char* plan_act_lists[] = {
 		"Stop",
 		"Left",
@@ -323,7 +361,8 @@ char* plan_act_lists[] = {
 		"Invert",
 		"Next Plan",
 		"Null",
-		"Backward"
+		"Backward",
+		"Skip To"
 };
 
 char* plan_mode_lists[] = {
@@ -449,7 +488,7 @@ void UI_PlanSetDisplay(int8_t num, Action_typedef* plan, uint8_t num_index) {
 			break;
 		case 10:
 			DISP_DisplayText(&planset_list_name[i], " Color");
-			switch(GET_LINE_COLOR_STAT(plan->status)) {
+			switch(plan->status) {
 			case 0: DISP_DisplayText(&planset_list_value[i], "Idem"); break;
 			case 1: DISP_DisplayText(&planset_list_value[i], "Black"); break;
 			case 2: DISP_DisplayText(&planset_list_value[i], "White"); break;
@@ -705,6 +744,51 @@ UI_Menu_Lists UI_PlanSet() {
 			if(bt & SW_RG_PRESS) {
 				if(GET_LINE_COLOR_STAT(plan_set.status) != 2) ADD_LINE_COLOR_STAT(plan_set.status,1) else SET_LINE_COLOR_STAT(plan_set.status, 0);
 				bt_status = 1;
+				change_status = 1;
+				goto plan_set;
+			}
+			break;
+		case 11:
+			if(bt & SW_OK_PRESS) {
+				DISP_DisplayText(&short_message, "Insert action?");
+				while(1) {
+					if(bt == UI_ReadButton()) continue;
+					bt = UI_ReadButton();
+					if(bt & SW_OK_PRESS) {
+						DISP_DisplayText(&short_message, "Inserting");
+						Storage_InsertAction(num_index);
+						DISP_DisplayText(&short_message, "Insert Done!");
+						break;
+					}
+					if(bt & (SW_BK_PRESS||SW_HM_PRESS)) {
+						break;
+					}
+				}
+				DISP_DisplayText(&short_message_white, " ");
+				bt_status = 0;
+				change_status = 1;
+				goto plan_set;
+			}
+			break;
+		case 12:
+			if(bt & SW_OK_PRESS) {
+				DISP_DisplayText(&short_message, "Delete this action?");
+				while(1) {
+					if(bt == UI_ReadButton()) continue;
+					bt = UI_ReadButton();
+					if(bt & SW_OK_PRESS) {
+						DISP_DisplayText(&short_message, "Deleting");
+						Storage_DeleteAction(num_index);
+						DISP_DisplayText(&short_message, "Delete Done!");
+						plan_set = GetAction(num_index);
+						break;
+					}
+					if(bt & (SW_BK_PRESS||SW_HM_PRESS)) {
+						break;
+					}
+				}
+				DISP_DisplayText(&short_message_white, " ");
+				bt_status = 0;
 				change_status = 1;
 				goto plan_set;
 			}
@@ -1023,6 +1107,23 @@ UI_Menu_Lists UI_PlanSelect() {
 			if(num_menu==0) num_menu = MAX_PLAN-1; else num_menu--;
 			goto ui_cp;
 		}
+		else if(bt & SW_RG_PRESS) {
+			DISP_DisplayText(&short_message, "Copy to this Plan?");
+			while(1) {
+				if(bt == UI_ReadButton()) continue;
+				bt = UI_ReadButton();
+				if(bt & SW_OK_PRESS) {
+					DISP_DisplayText(&short_message, "Copying...");
+					Storage_CopyPlan(num_menu);
+					DISP_DisplayText(&short_message, "Copy done!");
+					break;
+				}
+				if(bt & (SW_BK_PRESS||SW_HM_PRESS)) {
+					goto ui_cp;
+				}
+			}
+			goto ui_cp;
+		}
 		else if(bt & (SW_HM_PRESS|SW_BK_PRESS)) {
 			return UI_HOMESCREEN;
 		}
@@ -1233,16 +1334,19 @@ UI_Menu_Lists UI_PIDSetting() {
 
 
 void UI_SpeedSetDisplay(uint8_t num) {
-	for(int i=2; i<4; i++) {
+	for(int i=1; i<4; i++) {
 		if(i == num) cp_menu[i].color = DISP_COLOR_BLACK;
 		else cp_menu[i].color = DISP_COLOR_WHITE;
 		char buff[22];
 		switch(i) {
-		case 2:
+		case 1:
 			sprintf(buff, "Speed ~ %-3i", plan.speed);
 			break;
-		case 3:
+		case 2:
 			sprintf(buff, "Tr Speed ~ %-3i", plan.turn_speed);
+			break;
+		case 3:
+			sprintf(buff, "Accel ~ %-3i", plan.acc);
 			break;
 		}
 		DISP_DisplayText(&cp_menu[i], buff);
@@ -1251,7 +1355,7 @@ void UI_SpeedSetDisplay(uint8_t num) {
 
 UI_Menu_Lists UI_SpeedSetting() {
 	uint8_t bt, bt2;
-	uint8_t num_menu = 2;
+	uint8_t num_menu = 1;
 	uint32_t tick = 0;
 	uint8_t bt_status = 0;
 	DISP_DisplayText(&home_status, "SPEED");
@@ -1271,7 +1375,7 @@ UI_Menu_Lists UI_SpeedSetting() {
 			goto ui_mem;
 		}
 		else if(bt & SW_UP_PRESS) {
-			if(num_menu==2) {
+			if(num_menu==1) {
 				Storage_SetSpeed();
 				return UI_HOMESCREEN;
 			}
@@ -1286,7 +1390,7 @@ UI_Menu_Lists UI_SpeedSetting() {
 			return UI_HOMESCREEN;
 		}
 		switch(num_menu) {
-		case 2 :
+		case 1 :
 			if(bt & SW_LF_PRESS) {
 				if(plan.speed==0) plan.speed = 99; else plan.speed-=1;
 				bt_status = 1;
@@ -1297,14 +1401,25 @@ UI_Menu_Lists UI_SpeedSetting() {
 				bt_status = 1;
 				goto ui_mem;
 			}
-		case 3 :
+		case 2 :
 			if(bt & SW_LF_PRESS) {
-				if(plan.turn_speed==0) plan.turn_speed = 99; else plan.turn_speed-=1;
+				if(plan.acc==0) plan.turn_speed = 99; else plan.turn_speed-=1;
 				bt_status = 1;
 				goto ui_mem;
 			}
 			else if(bt & SW_RG_PRESS) {
-				if(plan.turn_speed==99) plan.turn_speed = 0; else plan.turn_speed+=1;
+				if(plan.acc==99) plan.turn_speed = 0; else plan.turn_speed+=1;
+				bt_status = 1;
+				goto ui_mem;
+			}
+		case 3 :
+			if(bt & SW_LF_PRESS) {
+				if(plan.acc==0) plan.acc = 99; else plan.acc-=1;
+				bt_status = 1;
+				goto ui_mem;
+			}
+			else if(bt & SW_RG_PRESS) {
+				if(plan.acc==99) plan.acc = 0; else plan.acc+=1;
 				bt_status = 1;
 				goto ui_mem;
 			}
@@ -1313,7 +1428,6 @@ UI_Menu_Lists UI_SpeedSetting() {
 	}
 	return UI_IDLE;
 }
-
 
 
 UI_Menu_Lists UI_Run() {

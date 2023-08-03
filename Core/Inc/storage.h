@@ -45,6 +45,10 @@
 #define SET_LINE_COLOR_STAT(x,val) {x &=~0x03; x |= (val&0x03);}
 #define ADD_LINE_COLOR_STAT(x,val) {x=(x+val)&0x03;}
 
+#define LINE_COLOR_STAT_IDEM 0
+#define LINE_COLOR_STAT_BLACK 1
+#define LINE_COLOR_STAT_WHITE 2
+
 typedef struct {
 	uint8_t act;
 	uint8_t sen_trig;
@@ -105,5 +109,11 @@ void Storage_SetSpeed();
 uint8_t GetActionSequence();
 void GetActionSequenceRoutine();
 void GetActionSequenceInit(uint8_t num);
+Action_typedef GetActionOther(uint8_t plan, uint8_t index);
+void SetActionOther(Action_typedef act, uint8_t index);
+void SetActionOther2(uint8_t n_plan, Action_typedef act, uint8_t index);
+void Storage_CopyPlan(uint8_t plan_dest);
+void Storage_InsertAction(uint8_t index);
+void Storage_DeleteAction(uint8_t index);
 
 #endif /* INC_STORAGE_H_ */

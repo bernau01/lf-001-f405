@@ -18,7 +18,7 @@
 
 extern float kp, ki, kd;
 extern Motor_typedef motor[2];
-
+extern float robot_enc_pos;
 void Run_Init();
 void Run_MotorRoutine(float period);
 void Run_LineTracing(float speed, float period, uint8_t flag);

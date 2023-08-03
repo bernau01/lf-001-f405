@@ -12,8 +12,9 @@
 ../Core/Src/plan.c:232:9:Plan_Invert	24	static
 ../Core/Src/plan.c:240:9:Plan_NextPlan	24	static
 ../Core/Src/plan.c:245:9:Plan_Null	24	static
-../Core/Src/plan.c:249:9:Plan_ActionInit	56	static
-../Core/Src/plan.c:294:9:Plan_Stop	8	static
-../Core/Src/plan.c:303:6:Plan_Start	8	static
-../Core/Src/plan.c:315:6:Plan_UIRoutine	24	static
-../Core/Src/plan.c:327:6:Plan_Main	32	static
+../Core/Src/plan.c:249:9:Plan_Skip	24	static
+../Core/Src/plan.c:254:9:Plan_ActionInit	56	static
+../Core/Src/plan.c:304:9:Plan_Stop	8	static
+../Core/Src/plan.c:313:6:Plan_Start	8	static
+../Core/Src/plan.c:325:6:Plan_UIRoutine	24	static
+../Core/Src/plan.c:337:6:Plan_Main	32	static

@@ -83,6 +83,7 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 extern uint8_t main_flag;
+extern uint8_t run_counter;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

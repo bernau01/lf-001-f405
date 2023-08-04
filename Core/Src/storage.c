@@ -75,7 +75,7 @@ void Storage_ResetPlan() {
 	temp.kpid[1] = 0;
 	temp.kpid[2] = 0;
 	temp.status_pid = 0;
-	temp.acc = 1;
+//	temp.acc = 1;
 
 	uint8_t buff[PAGE_SIZE];
 	memcpy(buff, (uint8_t*)&temp, sizeof(Plan_typedef));
@@ -189,12 +189,15 @@ void Storage_SetCheckpoint() {
 
 void Storage_SetPID() {
 	uint8_t offset = (uint8_t*)&plan.kpid - (uint8_t*)&plan;
+	uint8_t buff[3*sizeof(float)+1];
+	memcpy(buff, (uint8_t*)plan.kpid, 3*sizeof(float));
+	buff[3*sizeof(float)] = plan.status_pid;
 	while(!EEP_ReadyToWrite());
-	EEP_WriteMem(num_plan_addr+offset, (uint8_t*)plan.kpid, 3*sizeof(float));
+	EEP_WriteMem(num_plan_addr+offset, (uint8_t*)plan.kpid, 3*sizeof(float)+1);
 
-	offset = (uint8_t*)&plan.status_pid - (uint8_t*)&plan;
-	while(!EEP_ReadyToWrite());
-	EEP_WriteMem(num_plan_addr+offset, (uint8_t*)plan.status_pid, 1);
+//	offset = (uint8_t*)&plan.status_pid - (uint8_t*)&plan;
+//	while(!EEP_ReadyToWrite());
+//	EEP_WriteMem(num_plan_addr+offset, (uint8_t*)plan.status_pid, 1);
 }
 
 void Storage_SetSpeed() {
@@ -233,6 +236,7 @@ void SetActionOther2(uint8_t n_plan, Action_typedef act, uint8_t index) {
 }
 
 uint8_t GetActionSequence() {
+//	return 0; //temporary disable
 	uint8_t retval;
 	if(!(storage_flag & STO_FLAG_BUFF_EMPTY)) {
 
@@ -257,11 +261,13 @@ void GetActionSequenceRoutine() {
 		(plan_buffer_i == 0 && (plan_buffer_f != BUFFER_SIZE-1)) ) {
 		if(buff_index < plan.num_action-2) {
 			buff_index++;
-			if(plan_buffer_f>=BUFFER_SIZE-1) plan_buffer_f=0; else plan_buffer_f++;
-			plan_buffer[plan_buffer_f] = GetActionOther(num_plan, buff_index);
-			if(plan_buffer[plan_buffer_f].act == 11) {
-				buff_index = plan_buffer[plan_buffer_f].act_value-1;
+			uint8_t index_f = plan_buffer_f;
+			if(index_f>=BUFFER_SIZE-1) index_f=0; else index_f++;
+			plan_buffer[index_f] = GetActionOther(num_plan, buff_index);
+			if(plan_buffer[index_f].act == 11) {
+				buff_index = plan_buffer[index_f].act_value-1;
 			}
+			plan_buffer_f = index_f;
 			storage_flag &=~STO_FLAG_BUFF_EMPTY;
 		}
 		else {

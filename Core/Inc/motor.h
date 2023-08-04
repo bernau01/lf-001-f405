@@ -22,8 +22,9 @@ typedef struct {
 	uint16_t ch2;
 	int8_t dir;
 	TIM_HandleTypeDef* enc_htim;
-	int16_t enc_cnt;
-	int16_t enc_vel;
+	int16_t enc_last_cnt;
+	int32_t enc_cnt;
+	int32_t enc_vel;
 	float pwm;
 	float pwm_factor;
 	int16_t vel_sp;

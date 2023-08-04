@@ -20,11 +20,12 @@
 uint32_t plan_counter;
 uint32_t plan_last_counter;
 uint32_t plan_last_counter2;
-int16_t plan_last_enc;
+int32_t plan_last_enc;
 
 uint8_t counter_status = 0;
 uint8_t action_status = 0;
-uint8_t acc_status = 0;
+//uint8_t acc_status = 0;
+uint8_t speed_now;
 
 void Plan_SetCounter() {
 	plan_last_counter = plan_counter;
@@ -57,7 +58,7 @@ uint8_t Plan_CheckSensor(uint8_t s, uint8_t align) {
 uint8_t Plan_Left(Action_typedef a) {
 	if(Plan_CheckSensor(a.sen_trig, LEFT_ALIGN_SEN) && counter_status == 0) {
 			Plan_SetCounter();
-			plan_last_enc = MOTOR_L.enc_cnt;
+			plan_last_enc = MOTOR_R.enc_cnt;
 			counter_status = 1;
 	}
 	if(counter_status == 1) {
@@ -71,7 +72,7 @@ uint8_t Plan_Left(Action_typedef a) {
 				if(Plan_CheckSensor(5, LEFT_ALIGN_SEN)) return 2;
 			break;
 		case 2:
-			if(MOTOR_L.enc_cnt - plan_last_enc > a.act_value) return 2;
+			if(MOTOR_R.enc_cnt - plan_last_enc > (int32_t)a.act_value*ENC_FACTOR) return 2;
 			break;
 		}
 		return 1;
@@ -82,7 +83,7 @@ uint8_t Plan_Left(Action_typedef a) {
 uint8_t Plan_Right(Action_typedef a) {
 	if(Plan_CheckSensor(a.sen_trig, RIGHT_ALIGN_SEN) && counter_status == 0) {
 			Plan_SetCounter();
-			plan_last_enc = MOTOR_R.enc_cnt;
+			plan_last_enc = MOTOR_L.enc_cnt;
 			counter_status = 1;
 	}
 	if(counter_status == 1) {
@@ -96,7 +97,7 @@ uint8_t Plan_Right(Action_typedef a) {
 				if(Plan_CheckSensor(5, RIGHT_ALIGN_SEN)) return 2;
 			break;
 		case 2:
-			if(MOTOR_R.enc_cnt - plan_last_enc > a.act_value) return 2;
+			if(MOTOR_L.enc_cnt - plan_last_enc > (int32_t)a.act_value*ENC_FACTOR) return 2;
 			break;
 		}
 		return 1;
@@ -121,7 +122,7 @@ uint8_t Plan_Forward(Action_typedef a, uint8_t _speed) {
 				if(Plan_CheckSensor(7, LR_ALIGN_SEN)) return 2;
 			break;
 		case 2:
-			if(robot_enc_pos - plan_last_enc > a.act_value) return 2;
+			if(robot_enc_pos - plan_last_enc > (int32_t)a.act_value*ENC_FACTOR) return 2;
 			break;
 		}
 		return 1;
@@ -146,8 +147,33 @@ uint8_t Plan_Backward(Action_typedef a, uint8_t _speed) {
 				if(Plan_CheckSensor(7, LR_ALIGN_SEN)) return 2;
 			break;
 		case 2:
-			if(plan_last_enc - robot_enc_pos > a.act_value) return 2;
+			if(plan_last_enc - robot_enc_pos > (int32_t)a.act_value*ENC_FACTOR) return 2;
 			break;
+		}
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t Plan_Idle(Action_typedef a) {
+	if(Plan_CheckSensor(a.sen_trig, LR_ALIGN_SEN) && counter_status == 0) {
+			Plan_SetCounter();
+			plan_last_enc = robot_enc_pos;
+			counter_status = 1;
+	}
+	if(counter_status == 1) {
+		Run_SetMotorSpeed(0, 0);
+		switch(a.act_mode) {
+		case 0:
+			if(Plan_CheckCounterValue(a.act_value)) return 2;
+			break;
+//		case 1:
+//			if(Plan_CheckCounterValue(a.act_value))
+//				if(Plan_CheckSensor(7, LR_ALIGN_SEN)) return 2;
+//			break;
+//		case 2:
+//			if(robot_enc_pos - plan_last_enc > (int32_t)a.act_value*ENC_FACTOR) return 2;
+//			break;
 		}
 		return 1;
 	}
@@ -157,7 +183,7 @@ uint8_t Plan_Backward(Action_typedef a, uint8_t _speed) {
 uint8_t Plan_Follow(Action_typedef a) {
 	if(counter_status == 0) {
 		Plan_SetCounter();
-		plan_last_enc = MOTOR_L.enc_cnt;
+		robot_enc_pos = MOTOR_L.enc_cnt;
 		counter_status = 1;
 	}
 	switch(a.act_mode) {
@@ -165,7 +191,7 @@ uint8_t Plan_Follow(Action_typedef a) {
 		if(Plan_CheckCounterValue(a.act_value) && a.act_value!=0) return 2;
 		break;
 	case 2:
-		if(MOTOR_L.enc_cnt - plan_last_enc > a.act_value) return 2;
+		if(robot_enc_pos - plan_last_enc > (int32_t)a.act_value*ENC_FACTOR) return 2;
 		break;
 	default: return 2;
 	}
@@ -175,7 +201,7 @@ uint8_t Plan_Follow(Action_typedef a) {
 uint8_t Plan_FollowLeft(Action_typedef a) {
 	if(counter_status == 0) {
 		Plan_SetCounter();
-		plan_last_enc = MOTOR_L.enc_cnt;
+		plan_last_enc = robot_enc_pos;
 		counter_status = 1;
 	}
 	if(Plan_CheckSensor(a.sen_trig, LEFT_ALIGN_SEN) && counter_status == 1) {
@@ -193,7 +219,7 @@ uint8_t Plan_FollowLeft(Action_typedef a) {
 		if(Plan_CheckCounterValue(a.act_value) && a.act_value!=0) return 2;
 		break;
 	case 2:
-		if(MOTOR_L.enc_cnt - plan_last_enc > a.act_value) return 2;
+		if(robot_enc_pos - plan_last_enc > (int32_t)a.act_value*ENC_FACTOR) return 2;
 		break;
 	default: return 2;
 	}
@@ -203,7 +229,7 @@ uint8_t Plan_FollowLeft(Action_typedef a) {
 uint8_t Plan_FollowRight(Action_typedef a) {
 	if(counter_status == 0) {
 		Plan_SetCounter();
-		plan_last_enc = MOTOR_R.enc_cnt;
+		plan_last_enc = robot_enc_pos;
 		counter_status = 1;
 	}
 	if(Plan_CheckSensor(a.sen_trig, RIGHT_ALIGN_SEN) && counter_status == 1) {
@@ -221,7 +247,7 @@ uint8_t Plan_FollowRight(Action_typedef a) {
 		if(Plan_CheckCounterValue(a.act_value) && a.act_value!=0) return 2;
 		break;
 	case 2:
-		if(MOTOR_R.enc_cnt - plan_last_enc > a.act_value) return 2;
+		if(robot_enc_pos - plan_last_enc > (int32_t)a.act_value*ENC_FACTOR) return 2;
 		break;
 	default: return 2;
 	}
@@ -246,8 +272,8 @@ uint8_t Plan_Null(Action_typedef a) {
 	return 2;
 }
 
-uint8_t Plan_Skip(Action_typedef a) {
-	num_index = a.act_value;
+uint8_t Plan_Jump(Action_typedef a) {
+	if(a.act_value > 0) num_index = a.act_value-1;
 	return 2;
 }
 
@@ -269,35 +295,49 @@ uint8_t Plan_ActionInit(Action_typedef a, float period, uint8_t sp) {
 
 	if(Plan_CheckCounterValue(a.boost_time) && stat == 1) {
 		counter_status = 0;
-		acc_status = 0;
+//		acc_status = 0;
 		stat = 0;
 		return 3;
 	}
 
-	if(Plan_CheckCounterValue(plan.acc) && stat == 1 && acc_status == 1) {
-		acc_status = 2;
-	}
+//	if(Plan_CheckCounterValue(plan.acc) && stat == 1 && acc_status == 1) {
+//		acc_status = 2;
+//	}
 
-	if(acc_status == 0) {
-		_speed = sp;
-		acc_status = 1;
-	}
-	else if(acc_status == 1) {
-		if(sp > a.boost_speed) {
-			_speed = (sp-a.boost_speed)*(float)(Plan_CounterValue()/(float)plan.acc);
-			_speed += a.boost_speed;
-		}
-		else if(sp < a.boost_speed){
-			_speed = (a.boost_speed-sp)*(float)(Plan_CounterValue()/(float)plan.acc);
-			_speed += sp;
-		}
-	}
-	else if(acc_status == 2) {
+//	if(acc_status == 0) {
+//		_speed = sp;
+//		acc_status = 1;
+//	}
+//	else if(acc_status == 1) {
+//		if(sp > a.boost_speed) {
+//			_speed = (sp-a.boost_speed)*(float)(Plan_CounterValue()/(float)plan.acc);
+//			_speed += a.boost_speed;
+//		}
+//		else if(sp < a.boost_speed){
+//			_speed = (a.boost_speed-sp)*(float)(Plan_CounterValue()/(float)plan.acc);
+//			_speed += sp;
+//		}
+//	}
+//	else if(acc_status == 2) {
 		_speed = a.boost_speed;
-	}
-	Run_LineTracing(_speed, period, 0);
+//	}
+	Run_LineTracing(_speed, period, plan.status_pid);
 //	Run_LineTracing(a.boost_speed, period, 0);
 	return 1;
+}
+
+uint8_t Plan_Brake(Action_typedef a) {
+	if(counter_status == 0) {
+		Plan_SetCounter();
+		counter_status = 1;
+	}
+
+	Run_SetMotorSpeed(0, 0);
+	if(Plan_CheckCounterValue(a.brake)) {
+		counter_status = 0;
+		return 2;
+	}
+	return 0;
 }
 
 
@@ -307,6 +347,10 @@ uint8_t Plan_Stop() {
 	num_checkpoint = 0;
 	num_index = plan.checkpoint[num_checkpoint];
 	main_flag &=~ MAIN_FLAG_RUN;
+	run_counter++;
+	if(run_counter > 30) {
+		HAL_NVIC_SystemReset();
+	}
 	return 1;
 }
 
@@ -319,6 +363,7 @@ void Plan_Start() {
 	kp = plan.kpid[0];
 	ki = plan.kpid[1];
 	kd = plan.kpid[2];
+	speed_now = plan.speed;
 	main_flag |= MAIN_FLAG_RUN;
 }
 
@@ -337,11 +382,11 @@ void Plan_UIRoutine() {
 void Plan_Main(float period) {
 	if(main_flag & MAIN_FLAG_RUN) {
 		if(main_flag & MAIN_FLAG_NEXT) {
-			Run_LineTracing(plan.speed, period, 0);
+//			Run_LineTracing(speed_now, period, plan.status_pid);
 		}
 		else {
 			uint8_t retval;
-			uint8_t speed_now = (plan_active.unit_speed==0)?plan.speed:plan_active.unit_speed;
+			speed_now = (plan_active.unit_speed==0)?plan.speed:plan_active.unit_speed;
 			if(action_status == 0) {
 				switch(GET_LINE_COLOR_STAT(plan_active.status)) {
 				case LINE_COLOR_STAT_BLACK: SEN_BlackLine(); break;
@@ -353,7 +398,7 @@ void Plan_Main(float period) {
 			if(action_status <= 1 && 				 \
 					(plan_active.act != PLAN_STOP && \
 					 plan_active.act != PLAN_NULL && \
-					 plan_active.act != PLAN_SKIP)) {
+					 plan_active.act != PLAN_JUMP)) {
 				retval = Plan_ActionInit(plan_active, period, speed_now);
 			}
 			else {
@@ -369,12 +414,13 @@ void Plan_Main(float period) {
 				case PLAN_NEXT: 	retval = Plan_NextPlan(plan_active); 	break;
 				case PLAN_NULL: 	retval = Plan_Null(plan_active); 		break;
 				case PLAN_BACKWARD:	retval = Plan_Backward(plan_active, speed_now);	break;
-				case PLAN_SKIP: 	retval = Plan_Skip(plan_active); 		break;
+				case PLAN_JUMP: 	retval = Plan_Jump(plan_active); 		break;
+				case PLAN_IDLE: 	retval = Plan_Idle(plan_active); 		break;
 				default: retval = 2;
 				}
 			}
 			if(retval == 0) {
-				Run_LineTracing(speed_now, period, 0);
+				Run_LineTracing(speed_now, period, plan.status_pid);
 			}
 			else if(retval == 2){
 				counter_status = 0;

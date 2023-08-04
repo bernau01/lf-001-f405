@@ -11,6 +11,7 @@
 #define INC_PLAN_H_
 
 #define DELAY_FACTOR	10
+#define ENC_FACTOR	20
 
 #define PLAN_STOP		0
 #define PLAN_LEFT		1
@@ -23,7 +24,8 @@
 #define PLAN_NEXT		8
 #define PLAN_NULL		9
 #define PLAN_BACKWARD	10
-#define PLAN_SKIP		11
+#define PLAN_JUMP		11
+#define PLAN_IDLE		12
 
 void Plan_Start();
 void Plan_UIRoutine();

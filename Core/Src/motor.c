@@ -65,9 +65,10 @@ void Motor_ApplyPWM(Motor_typedef* hmot) {
 }
 
 void Motor_EnocderRoutine(Motor_typedef* hmot, float period) {
-	int16_t tim_cnt_now = __HAL_TIM_GET_COUNTER(hmot->enc_htim) * hmot->dir;
-	hmot->enc_vel =  tim_cnt_now - hmot->enc_cnt;
-	hmot->enc_cnt = tim_cnt_now;
+	int16_t tim_cnt_now = (int16_t)__HAL_TIM_GET_COUNTER(hmot->enc_htim) * hmot->dir;
+	hmot->enc_vel =  (int16_t)(tim_cnt_now - hmot->enc_last_cnt);
+	hmot->enc_last_cnt = tim_cnt_now;
+	hmot->enc_cnt += hmot->enc_vel;
 }
 
 void Motor_ControlRoutine(Motor_typedef* hmot, float __period) {

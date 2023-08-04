@@ -349,7 +349,7 @@ DISP_Text_Typedef planset_list_name[4];
 DISP_Text_Typedef planset_list_value[4];
 DISP_Text_Typedef planset_head;
 
-#define ACT_LIST	12
+#define ACT_LIST	13
 char* plan_act_lists[] = {
 		"Stop",
 		"Left",
@@ -362,7 +362,8 @@ char* plan_act_lists[] = {
 		"Next Plan",
 		"Null",
 		"Backward",
-		"Skip To"
+		"Jump To",
+		"Idle"
 };
 
 char* plan_mode_lists[] = {
@@ -442,7 +443,12 @@ void UI_PlanSetDisplay(int8_t num, Action_typedef* plan, uint8_t num_index) {
 			DISP_DisplayText(&planset_list_value[i], plan_mode_lists[plan->act_mode]);
 			break;
 		case 2:
-			DISP_DisplayText(&planset_list_name[i], plan_act_value_lists[plan->act_mode]);
+			if(plan->act != PLAN_JUMP) {
+				DISP_DisplayText(&planset_list_name[i], plan_act_value_lists[plan->act_mode]);
+			}
+			else {
+				DISP_DisplayText(&planset_list_name[i], "Index");
+			}
 			sprintf(buff, "%i", plan->act_value);
 			DISP_DisplayText(&planset_list_value[i], buff);
 			break;
@@ -1345,9 +1351,9 @@ void UI_SpeedSetDisplay(uint8_t num) {
 		case 2:
 			sprintf(buff, "Tr Speed ~ %-3i", plan.turn_speed);
 			break;
-		case 3:
-			sprintf(buff, "Accel ~ %-3i", plan.acc);
-			break;
+//		case 3:
+//			sprintf(buff, "Accel ~ %-3i", plan.acc);
+//			break;
 		}
 		DISP_DisplayText(&cp_menu[i], buff);
 	}
@@ -1369,7 +1375,7 @@ UI_Menu_Lists UI_SpeedSetting() {
 		bt = bt2;
 
 		if(bt & SW_DW_PRESS) {
-			if(num_menu!=3) num_menu++;
+			if(num_menu!=2) num_menu++;
 			bt_status = 0;
 			Storage_SetSpeed();
 			goto ui_mem;
@@ -1403,26 +1409,26 @@ UI_Menu_Lists UI_SpeedSetting() {
 			}
 		case 2 :
 			if(bt & SW_LF_PRESS) {
-				if(plan.acc==0) plan.turn_speed = 99; else plan.turn_speed-=1;
+				if(plan.turn_speed==0) plan.turn_speed = 99; else plan.turn_speed-=1;
 				bt_status = 1;
 				goto ui_mem;
 			}
 			else if(bt & SW_RG_PRESS) {
-				if(plan.acc==99) plan.turn_speed = 0; else plan.turn_speed+=1;
+				if(plan.turn_speed==99) plan.turn_speed = 0; else plan.turn_speed+=1;
 				bt_status = 1;
 				goto ui_mem;
 			}
-		case 3 :
-			if(bt & SW_LF_PRESS) {
-				if(plan.acc==0) plan.acc = 99; else plan.acc-=1;
-				bt_status = 1;
-				goto ui_mem;
-			}
-			else if(bt & SW_RG_PRESS) {
-				if(plan.acc==99) plan.acc = 0; else plan.acc+=1;
-				bt_status = 1;
-				goto ui_mem;
-			}
+//		case 3 :
+//			if(bt & SW_LF_PRESS) {
+//				if(plan.acc==0) plan.acc = 99; else plan.acc-=1;
+//				bt_status = 1;
+//				goto ui_mem;
+//			}
+//			else if(bt & SW_RG_PRESS) {
+//				if(plan.acc==99) plan.acc = 0; else plan.acc+=1;
+//				bt_status = 1;
+//				goto ui_mem;
+//			}
 
 		}
 	}

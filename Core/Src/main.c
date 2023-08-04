@@ -58,6 +58,7 @@
 /* USER CODE BEGIN PV */
 uint8_t sensor_status[14];
 uint8_t main_flag = 0;
+uint8_t run_counter = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -204,13 +205,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 //		ki = plan.kpid[1];
 //		kd = plan.kpid[2];
 //		Run_LineTracing(coy, 0.001, 0);
-		Plan_Main(0.001);
 		if(counter >= 10) {
 			Run_MotorRoutine(0.01);
 			main_flag |= MAIN_FLAG_DISP;
 			counter = 0;
 		}
-			Run_MotorRoutine2(0.001);
+		Plan_Main(0.001);
+		Run_MotorRoutine2(0.001);
 //			// 10ms
 //			Run_MotorRoutine(0.01);
 //			counter = 0;

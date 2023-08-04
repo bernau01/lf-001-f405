@@ -13,6 +13,7 @@
 Motor_typedef motor[2];
 
 float robot_enc_pos = 0;
+float robot_enc_yawpos = 0;
 
 void Run_Init() {
 	memset(motor, 0, sizeof(motor[0])*2);
@@ -23,7 +24,7 @@ void Run_Init() {
 	motor[0].ch2 = TIM_CHANNEL_2;
 	motor[0].enc_htim = &htim2;
 	motor[0].dir = 1;
-	motor[0].pwm_factor = 0.0095;
+	motor[0].pwm_factor = 0.009975;
 	motor[0].vel_factor = 0.625;
 	motor[0].kp = 2;
 	motor[0].ki = 15;
@@ -48,6 +49,7 @@ void Run_MotorRoutine(float period) {
 	Motor_EnocderRoutine(&motor[0], period);
 	Motor_EnocderRoutine(&motor[1], period);
 	robot_enc_pos += (motor[0].enc_vel*0.5) + (motor[1].enc_vel*0.5);
+	robot_enc_yawpos += (motor[1].enc_vel - motor[0].enc_vel);
 //	Motor_ControlRoutine(&motor[0], period);
 //	Motor_ControlRoutine(&motor[1], period);
 }
@@ -65,7 +67,7 @@ float ki;
 float kd;
 uint16_t sum_error;
 
-float Run_YawSpeed(float period, uint8_t flag) {
+float Run_YawSpeed(float period, float _speed, uint8_t flag) {
 	static int16_t last_error = 0;
 	int16_t error = 0;
 
@@ -145,16 +147,24 @@ float Run_YawSpeed(float period, uint8_t flag) {
 
 	int8_t div_error = error - last_error;
 	sum_error += error;
-	float p = kp * (float)error;
-	float i = ki * (float)sum_error * period;
-	float d = kd * (float)div_error / period;
+	float p, i, d;
+	if(flag == 1) {
+		p = _speed * PID_KKP * (float)error;
+		i = 0;
+		d = _speed * PID_KKD * (float)div_error / period;
+	}
+	else {
+		p = kp * (float)error;
+		i = ki * (float)sum_error * period;
+		d = kd * (float)div_error / period;
+	}
 	float mv = p + i + d;
 	last_error = error;
 	return mv;
 }
 
 void Run_LineTracing(float speed, float period, uint8_t flag) {
-	float yaw_speed = Run_YawSpeed(period, flag);
+	float yaw_speed = Run_YawSpeed(period, speed, flag);
 	Motor_SetPoint(&MOTOR_R, speed-yaw_speed);
 	Motor_SetPoint(&MOTOR_L, speed+yaw_speed);
 }

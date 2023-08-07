@@ -142,6 +142,57 @@ float Run_YawSpeed(float period, float _speed, uint8_t flag) {
 	case B10000111100001: error = 0; break;
 	case B00001111100001: error = 1; break;
 	case B10001111000011: error = 2; break;
+
+	case B11100011110000: error = -2; break;
+//	case B11000011110000: error = -2; break;
+	case B10000011110000: error = -2; break;
+
+	case B11100111110000: error = -1; break;
+	case B11000111110000: error = -1; break;
+//	case B10000111110000: error = -1; break;
+
+	case B11100111100000: error = 0; break;
+	case B11000111100000: error = 0; break;
+	case B10000111100000: error = 0; break;
+
+	case B11101111100000: error = 1; break;
+	case B11001111100000: error = 1; break;
+	case B10001111100000: error = 1; break;
+
+	case B11101111000000: error = 2; break;
+	case B11001111000000: error = 2; break;
+	case B10001111000000: error = 2; break;
+
+	case B10011111000000: error = 3; break;
+
+	case B10011110000000: error = 4; break;
+
+
+
+	case B00001111000111: error = 2; break;
+	case B00001111000011: error = 2; break;
+	case B00001111000001: error = 2; break;
+
+	case B00001111100111: error = 1; break;
+	case B00001111100011: error = 1; break;
+//	case B00001111100001: error = 1; break;
+
+	case B00000111100111: error = 0; break;
+	case B00000111100011: error = 0; break;
+	case B00000111100001: error = 0; break;
+
+	case B00000111110111: error = -1; break;
+	case B00000111110011: error = -1; break;
+	case B00000111110001: error = -1; break;
+
+	case B00000011110111: error = -2; break;
+	case B00000011110011: error = -2; break;
+	case B00000011110001: error = -2; break;
+
+	case B00000011111001: error = -3; break;
+
+	case B00000001111001: error = -4; break;
+
 	default: error = last_error;
 	}
 

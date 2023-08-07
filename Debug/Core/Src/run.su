@@ -2,5 +2,5 @@
 ../Core/Src/run.c:48:6:Run_MotorRoutine	32	static
 ../Core/Src/run.c:57:6:Run_MotorRoutine2	16	static
 ../Core/Src/run.c:70:7:Run_YawSpeed	64	static
-../Core/Src/run.c:166:6:Run_LineTracing	32	static
-../Core/Src/run.c:172:6:Run_SetMotorSpeed	16	static
+../Core/Src/run.c:217:6:Run_LineTracing	32	static
+../Core/Src/run.c:223:6:Run_SetMotorSpeed	16	static

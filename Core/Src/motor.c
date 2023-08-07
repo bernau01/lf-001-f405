@@ -88,8 +88,8 @@ void Motor_ControlRoutine(Motor_typedef* hmot, float __period) {
 		hmot->pwm = mv;
 		hmot->last_error = error;
 
-		hmot->filter = hmot->filter*(1-hmot->filter_alpha) + hmot->pwm*hmot->filter_alpha;
-		hmot->pwm = hmot->filter;
+//		hmot->filter = hmot->filter*(1-hmot->filter_alpha) + hmot->pwm*hmot->filter_alpha;
+//		hmot->pwm = hmot->filter;
 
 	case MOTOR_MODE_OPEN:
 		Motor_ApplyPWM(hmot);

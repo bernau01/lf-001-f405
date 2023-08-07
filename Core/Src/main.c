@@ -125,6 +125,7 @@ int main(void)
   OLED_Init(&hi2c1);
   DISP_Test();
   HAL_GPIO_WritePin(LED_SEN_EN_GPIO_Port, LED_SEN_EN_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(MEM_WP_GPIO_Port, MEM_WP_Pin, GPIO_PIN_RESET);
   HAL_TIM_Base_Start_IT(&htim6);
   UI_Init();
   /* USER CODE END 2 */

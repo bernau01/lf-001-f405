@@ -1261,6 +1261,9 @@ void UI_PIDSettingDisplay(uint8_t num) {
 		case 3:
 			sprintf(buff, "%s", plan.status_pid?"AUTO":"MANUAL");
 			break;
+		case 4:
+			sprintf(buff, "a ~ %1.3f", plan.alpha);
+			break;
 		}
 		DISP_DisplayText(&cp_menu[i], buff);
 	}
@@ -1282,12 +1285,12 @@ UI_Menu_Lists UI_PIDSetting() {
 		bt = bt2;
 
 		if(bt & SW_DW_PRESS) {
-			if(num_menu==3) num_menu = 0; else num_menu++;
+			if(num_menu==4) num_menu = 0; else num_menu++;
 			bt_status = 0;
 			goto ui_mem;
 		}
 		else if(bt & SW_UP_PRESS) {
-			if(num_menu==0) num_menu = 3; else num_menu--;
+			if(num_menu==0) num_menu = 4; else num_menu--;
 			bt_status = 0;
 			goto ui_mem;
 		}
@@ -1306,22 +1309,22 @@ UI_Menu_Lists UI_PIDSetting() {
 		case 1:
 		case 2:
 			if((bt & (SW_LF_PRESS|SW_OK_PRESS)) == SW_LF_PRESS) {
-				if(plan.kpid[num_menu]==0) plan.kpid[num_menu] = 99.0; else plan.kpid[num_menu]-=1.0;
+				if(plan.kpid[num_menu]==0) plan.kpid[num_menu] = 499.0; else plan.kpid[num_menu]-=1.0;
 				bt_status = 1;
 				goto ui_mem;
 			}
 			else if((bt & (SW_RG_PRESS|SW_OK_PRESS)) == SW_RG_PRESS) {
-				if(plan.kpid[num_menu]==99.0) plan.kpid[num_menu] = 0.0; else plan.kpid[num_menu]+=1.0;
+				if(plan.kpid[num_menu]==499.0) plan.kpid[num_menu] = 0.0; else plan.kpid[num_menu]+=1.0;
 				bt_status = 1;
 				goto ui_mem;
 			}
 			else if((bt & (SW_LF_PRESS|SW_OK_PRESS)) == (SW_LF_PRESS|SW_OK_PRESS)) {
-				if(plan.kpid[num_menu]==0) plan.kpid[num_menu] = 99.0; else plan.kpid[num_menu]-=0.10;
+				if(plan.kpid[num_menu]==0) plan.kpid[num_menu] = 499.0; else plan.kpid[num_menu]-=0.10;
 				bt_status = 1;
 				goto ui_mem;
 			}
 			else if((bt & (SW_RG_PRESS|SW_OK_PRESS)) == (SW_RG_PRESS|SW_OK_PRESS)) {
-				if(plan.kpid[num_menu]==99.0) plan.kpid[num_menu] = 0.0; else plan.kpid[num_menu]+=0.1;
+				if(plan.kpid[num_menu]==499.0) plan.kpid[num_menu] = 0.0; else plan.kpid[num_menu]+=0.1;
 				bt_status = 1;
 				goto ui_mem;
 			}
@@ -1332,6 +1335,33 @@ UI_Menu_Lists UI_PIDSetting() {
 				bt_status = 0;
 				goto ui_mem;
 			}
+			break;
+		case 4:
+			if((bt & (SW_LF_PRESS|SW_OK_PRESS)) == SW_LF_PRESS) {
+				plan.alpha-=0.01;
+				if(plan.alpha<0) plan.alpha = 1.0;
+				bt_status = 1;
+				goto ui_mem;
+			}
+			else if((bt & (SW_RG_PRESS|SW_OK_PRESS)) == SW_RG_PRESS) {
+				plan.alpha+=0.01;
+				if(plan.alpha>1.0) plan.alpha = 0.0;
+				bt_status = 1;
+				goto ui_mem;
+			}
+			else if((bt & (SW_LF_PRESS|SW_OK_PRESS)) == (SW_LF_PRESS|SW_OK_PRESS)) {
+				plan.alpha-=0.0010;
+				if(plan.alpha<0) plan.alpha = 1.0;
+				bt_status = 1;
+				goto ui_mem;
+			}
+			else if((bt & (SW_RG_PRESS|SW_OK_PRESS)) == (SW_RG_PRESS|SW_OK_PRESS)) {
+				plan.alpha+=0.001;
+				if(plan.alpha>1.0) plan.alpha = 0.0;
+				bt_status = 1;
+				goto ui_mem;
+			}
+			break;
 		}
 	}
 	return UI_IDLE;
@@ -1351,9 +1381,9 @@ void UI_SpeedSetDisplay(uint8_t num) {
 		case 2:
 			sprintf(buff, "Tr Speed ~ %-3i", plan.turn_speed);
 			break;
-//		case 3:
-//			sprintf(buff, "Accel ~ %-3i", plan.acc);
-//			break;
+		case 3:
+			sprintf(buff, "Accel ~ %-1.2f", plan.acc);
+			break;
 		}
 		DISP_DisplayText(&cp_menu[i], buff);
 	}
@@ -1375,7 +1405,7 @@ UI_Menu_Lists UI_SpeedSetting() {
 		bt = bt2;
 
 		if(bt & SW_DW_PRESS) {
-			if(num_menu!=2) num_menu++;
+			if(num_menu!=3) num_menu++;
 			bt_status = 0;
 			Storage_SetSpeed();
 			goto ui_mem;
@@ -1418,17 +1448,17 @@ UI_Menu_Lists UI_SpeedSetting() {
 				bt_status = 1;
 				goto ui_mem;
 			}
-//		case 3 :
-//			if(bt & SW_LF_PRESS) {
-//				if(plan.acc==0) plan.acc = 99; else plan.acc-=1;
-//				bt_status = 1;
-//				goto ui_mem;
-//			}
-//			else if(bt & SW_RG_PRESS) {
-//				if(plan.acc==99) plan.acc = 0; else plan.acc+=1;
-//				bt_status = 1;
-//				goto ui_mem;
-//			}
+		case 3 :
+			if(bt & SW_LF_PRESS) {
+				if(plan.acc==0) plan.acc = 99.; else plan.acc-=1;
+				bt_status = 1;
+				goto ui_mem;
+			}
+			else if(bt & SW_RG_PRESS) {
+				if(plan.acc==99) plan.acc = 0; else plan.acc+=1;
+				bt_status = 1;
+				goto ui_mem;
+			}
 
 		}
 	}

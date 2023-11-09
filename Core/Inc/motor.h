@@ -35,9 +35,13 @@ typedef struct {
 	float sum_error;
 	float filter;
 	float filter_alpha;
+//	float acc;
+//	float acc_last_val;
 } Motor_typedef;
 
+//void Motor_SetAccl(Motor_typedef* hmot, float value);
 void Motor_SetPoint(Motor_typedef* hmot, float value);
+float Motor_GetPoint(Motor_typedef* hmot);
 void Motor_ApplyPWM(Motor_typedef* hmot);
 void Motor_EnocderRoutine(Motor_typedef* hmot, float period);
 void Motor_ControlRoutine(Motor_typedef* hmot, float period);

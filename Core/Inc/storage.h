@@ -72,7 +72,8 @@ typedef struct {
 	uint8_t turn_speed;
 	float kpid[3];
 	uint8_t status_pid;
-//	uint8_t acc;
+	float alpha;
+	float acc;
 } Plan_typedef;
 
 //typedef struct {

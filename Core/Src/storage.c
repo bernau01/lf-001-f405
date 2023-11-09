@@ -75,7 +75,8 @@ void Storage_ResetPlan() {
 	temp.kpid[1] = 0;
 	temp.kpid[2] = 0;
 	temp.status_pid = 0;
-//	temp.acc = 1;
+	temp.alpha = 1;
+	temp.acc = 100;
 
 	uint8_t buff[PAGE_SIZE];
 	memcpy(buff, (uint8_t*)&temp, sizeof(Plan_typedef));
@@ -189,11 +190,13 @@ void Storage_SetCheckpoint() {
 
 void Storage_SetPID() {
 	uint8_t offset = (uint8_t*)&plan.kpid - (uint8_t*)&plan;
-	uint8_t buff[3*sizeof(float)+1];
-	memcpy(buff, (uint8_t*)plan.kpid, 3*sizeof(float));
-	buff[3*sizeof(float)] = plan.status_pid;
+	uint8_t size = ((uint8_t*)&plan.alpha - (uint8_t*)&plan.kpid) + sizeof(float);
+//	uint8_t buff[size];
+//	memcpy(buff, (uint8_t*)plan.kpid, 3*sizeof(float));
+//	buff[3*sizeof(float)] = plan.status_pid;
+//	memcpy(buff+(3*sizeof(float))+1, (uint8_t*)&plan.alpha, sizeof(float));
 	while(!EEP_ReadyToWrite());
-	EEP_WriteMem(num_plan_addr+offset, (uint8_t*)plan.kpid, 3*sizeof(float)+1);
+	EEP_WriteMem(num_plan_addr+offset, (uint8_t*)plan.kpid, size);
 
 //	offset = (uint8_t*)&plan.status_pid - (uint8_t*)&plan;
 //	while(!EEP_ReadyToWrite());
@@ -204,6 +207,10 @@ void Storage_SetSpeed() {
 	uint8_t offset = (uint8_t*)&plan.speed - (uint8_t*)&plan;
 	while(!EEP_ReadyToWrite());
 	EEP_WriteMem(num_plan_addr+offset, (uint8_t*)&plan.speed, 2);
+
+	offset = (uint8_t*)&plan.acc - (uint8_t*)&plan;
+	while(!EEP_ReadyToWrite());
+	EEP_WriteMem(num_plan_addr+offset, (uint8_t*)&plan.acc, sizeof(float));
 }
 
 Action_typedef GetActionOther(uint8_t plan, uint8_t index) {

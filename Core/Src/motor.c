@@ -11,6 +11,10 @@ void Motor_Init(Motor_typedef* hmot) {
 
 }
 
+//void Motor_SetAccl(Motor_typedef* hmot, float value) {
+//	hmot->acc = value;
+//}
+
 void Motor_SetPWM(Motor_typedef* hmot, float value) {
 	if(value > 99) value = 99;
 	else if(value < -99) value = -99;
@@ -44,8 +48,33 @@ void Motor_SetPoint(Motor_typedef* hmot, float value) {
 	}
 }
 
+float Motor_GetPoint(Motor_typedef* hmot) {
+	switch(hmot->mode) {
+	case MOTOR_MODE_CLOSE:
+		return (hmot->vel_sp/hmot->vel_factor);
+		break;
+	case MOTOR_MODE_OPEN:
+	default:
+		return hmot->pwm;
+		break;
+	}
+}
+
 void Motor_ApplyPWM(Motor_typedef* hmot) {
-	int16_t tim_period = (hmot->pwm*hmot->pwm_factor)*hmot->pwm_htim->Init.Period;
+//	float range;
+//	if(fabsf(hmot->acc_last_val - hmot->pwm) < hmot->acc) range = fabsf(hmot->acc_last_val - hmot->pwm);
+//	else range = hmot->acc;
+//
+//	if(hmot->acc_last_val < hmot->pwm) hmot->acc_last_val += range;
+//	else if(hmot->acc_last_val > hmot->pwm) hmot->acc_last_val -= range;
+
+//	float range = absf(hmot->acc_last_val - hmot->pwm);
+//	range /= hmot->acc;
+//
+//	if(hmot->acc_last_val < hmot->pwm) hmot->acc_last_val = hmot->pwm + range;
+//	else if(hmot->acc_last_val > hmot->pwm) hmot->acc_last_val = hmot->pwm - range;
+
+	int16_t tim_period = (hmot->pwm * hmot->pwm_factor) * hmot->pwm_htim->Init.Period;
 	uint8_t pwm_sign = tim_period < 0;
 //	uint8_t dir_sign = hmot->dir < 0;
 

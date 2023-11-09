@@ -23,9 +23,9 @@
 ../Core/Src/ui.c:1162:6:UI_MemSettingDisplay	24	static
 ../Core/Src/ui.c:1174:15:UI_MemSetting	16	static
 ../Core/Src/ui.c:1242:6:UI_PIDSettingDisplay	48	static
-../Core/Src/ui.c:1269:15:UI_PIDSetting	32	static
-../Core/Src/ui.c:1342:6:UI_SpeedSetDisplay	48	static
-../Core/Src/ui.c:1362:15:UI_SpeedSetting	24	static
-../Core/Src/ui.c:1439:15:UI_Run	40	static
-../Core/Src/ui.c:1474:6:UI_Init	8	static
-../Core/Src/ui.c:1482:6:UI_Main	8	static
+../Core/Src/ui.c:1272:15:UI_PIDSetting	32	static
+../Core/Src/ui.c:1372:6:UI_SpeedSetDisplay	48	static
+../Core/Src/ui.c:1392:15:UI_SpeedSetting	24	static
+../Core/Src/ui.c:1469:15:UI_Run	40	static
+../Core/Src/ui.c:1504:6:UI_Init	8	static
+../Core/Src/ui.c:1512:6:UI_Main	8	static

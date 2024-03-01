@@ -43,6 +43,28 @@ uint32_t Plan_CounterValue() {
 	return (plan_counter - plan_last_counter);
 }
 
+/*******************************COUNTER**********************************/
+
+void Plan_StartCounter(PlanCounter_t* c) {
+    c->status = COUNTER_RUN;
+    c->counter_stamp = c->counter;
+}
+
+void Plan_Counter(PlanCounter_t* c) {
+    c->counter+=1;
+}
+
+uint8_t Plan_CheckCounterVal(PlanCounter_t* c, uint32_t value) {
+    return (c->counter - c->counter_stamp) >= value*DELAY_FACTOR;
+}
+
+
+PlanCounter_t action_delay_counter;
+PlanCounter_t duration_counter;
+
+
+/**************************************CHECK SENSOR****************************************/
+
 uint8_t Plan_CheckSensor(uint8_t s, uint8_t align) {
 	if(s == 0) return 1;
 	else {
@@ -56,6 +78,55 @@ uint8_t Plan_CheckSensor(uint8_t s, uint8_t align) {
 		default:
 			return sensor_disp_status[LEFT_SENSOR(s)] > 0;
 		}
+	}
+}
+
+
+
+
+/*********************************ACTION***********************************/
+
+//#define ACTION_IDLE			0
+//#define ACTION_WAIT_TIME	1
+//#define ACTION_BOOST_TIME 	2
+//#define ACTION_FIND_SENSOR	3
+//#define ACTION_EXECUTE_1	4
+//#define ACTION_EXECUTE_2	5
+//#define ACTION_EXECUTE_3	6
+
+
+PlanStatus_t plan_status;
+ActionInitStatus_t action_init_status;
+ActionStatus_t action_status_;
+
+PlanStatus_t Plan_Left2(Action_typedef action) {
+	switch (action_status_) {
+
+	case ACTION_STATUS_IDLE :
+		action_status_ = ACTION_STATUS_FIND;
+
+	case ACTION_STATUS_FIND :
+		if(Plan_CheckSensor(action.sen_trig, LEFT_ALIGN_SEN)) {
+			action_status_ = ACTION_STATUS_BRAKE_1;
+		}
+		else return PLAN_STATUS_IDLE;
+
+	case ACTION_STATUS_BRAKE_1 :
+		Run_SetReverseSpeed(0.5);
+		if(Plan_CheckCounterValue((action.brake<BRAKE_MAX_DELAY)?action.brake:BRAKE_MAX_DELAY)) {
+			action_status_ = ACTION_STATUS_BRAKE_2;
+		}
+		else return PLAN_STATUS_EXECUTE;
+
+	case ACTION_STATUS_BRAKE_2 :
+		Run_SetReverseSpeed(0.5);
+		if(Plan_CheckCounterValue((action.brake<BRAKE_MAX_DELAY)?action.brake:BRAKE_MAX_DELAY)) {
+			action_status_ = ACTION_STATUS_BRAKE_2;
+		}
+		else return PLAN_STATUS_EXECUTE;
+
+	case ACTION_STATUS_EXECUTE_1 :
+
 	}
 }
 
@@ -411,10 +482,9 @@ uint8_t Plan_ActionInit(Action_typedef a, float period, uint8_t sp) {
 	if(Plan_CheckCounterValue(a.wait_time) && stat == 0) {
 		counter_status = 0;
 		stat = 1;
+		_speed = sp;
 		return 0;
 	}
-
-	_speed = sp;
 
 	if(stat == 0) return 0;
 
@@ -520,6 +590,7 @@ void Plan_Main(float period) {
 	if(main_flag & MAIN_FLAG_RUN) {
 		if(main_flag & MAIN_FLAG_NEXT) {
 //			Run_LineTracing(speed_now, period, plan.status_pid);
+
 		}
 		else {
 
@@ -586,3 +657,41 @@ void Plan_Main(float period) {
 		plan_counter++;
 	}
 }
+
+//typedef enum {
+//	PLAN_INIT,
+//	PLAN_WAIT,
+//	PLAN_BOOST,
+//	PLAN_EXEC,
+//	PLAN_FINAL
+//} PlanStatus_t;
+//
+//PlanStatus_t plan_status;
+//
+//void Plan_Main2(float period) {
+//	if(main_flag & MAIN_FLAG_RUN) {
+//		if(main_flag & MAIN_FLAG_NEXT) {
+//		//			Run_LineTracing(speed_now, period, plan.status_pid);
+//
+//		}
+//		else {
+//			switch(plan_status) {
+//			case PLAN_INIT: {
+//
+//			} break;
+//			case PLAN_WAIT: {
+//
+//			} break;
+//			case PLAN_BOOST: {
+//
+//			} break;
+//			case PLAN_EXEC: {
+//				Run_LineTracing(speed_now, period, plan.status_pid);
+//			} break;
+//			case PLAN_FINAL: {
+//
+//			} break;
+//			}
+//		}
+//	}
+//}

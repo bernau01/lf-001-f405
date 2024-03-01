@@ -21,27 +21,27 @@ float temp_yaw_speed;
 void Run_Init() {
 	memset(motor, 0, sizeof(motor[0])*2);
 
-	motor[0].mode = MOTOR_MODE_OPEN;
+	motor[0].mode = MOTOR_MODE_CLOSE;
 	motor[0].pwm_htim = &htim3;
 	motor[0].ch1 = TIM_CHANNEL_1;
 	motor[0].ch2 = TIM_CHANNEL_2;
 	motor[0].enc_htim = &htim2;
-	motor[0].dir = -1;
+	motor[0].dir = 1;
 	motor[0].pwm_factor = 0.01;
-	motor[0].vel_factor = 0.625;
-	motor[0].kp = 2;
+	motor[0].vel_factor = 20;
+	motor[0].kp = 0.2;
 	motor[0].ki = 15;
 	motor[0].filter_alpha = 0.5;
 
 	motor[1].mode = motor[0].mode;
 	motor[1].pwm_htim = &htim3;
-	motor[1].ch1 = TIM_CHANNEL_4;
-	motor[1].ch2 = TIM_CHANNEL_3;
+	motor[1].ch1 = TIM_CHANNEL_3;
+	motor[1].ch2 = TIM_CHANNEL_4;
 	motor[1].enc_htim = &htim4;
-	motor[1].dir = 1;
+	motor[1].dir = -1;
 	motor[1].pwm_factor = 0.0097;
-	motor[1].vel_factor = 0.625;
-	motor[1].kp = motor[0].kp;
+	motor[1].vel_factor = 20;
+	motor[1].kp = 0.1;
 	motor[1].ki = motor[0].ki;
 	motor[1].filter_alpha = motor[0].filter_alpha;
 

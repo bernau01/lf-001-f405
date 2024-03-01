@@ -206,8 +206,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 //		ki = plan.kpid[1];
 //		kd = plan.kpid[2];
 //		Run_LineTracing(coy, 0.001, 0);
+		Run_MotorRoutine(0.001);
 		if(counter >= 10) {
-			Run_MotorRoutine(0.01);
 			main_flag |= MAIN_FLAG_DISP;
 			counter = 0;
 		}

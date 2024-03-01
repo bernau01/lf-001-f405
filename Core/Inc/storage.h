@@ -14,7 +14,7 @@
 #define MAX_ACTION_PER_PLAN		200
 #define DEF_ACTION_PER_PLAN		100
 #define MAX_CHECKPOINT			20
-#define BUFFER_SIZE				4
+#define BUFFER_SIZE				10
 
 #define INIT_ADDR_START				0x0000
 #define INIT_ADDR_END				0x000F

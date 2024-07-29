@@ -349,7 +349,7 @@ DISP_Text_Typedef planset_list_name[4];
 DISP_Text_Typedef planset_list_value[4];
 DISP_Text_Typedef planset_head;
 
-#define ACT_LIST	13
+#define ACT_LIST	15
 char* plan_act_lists[] = {
 		"Stop",
 		"Left",
@@ -363,7 +363,9 @@ char* plan_act_lists[] = {
 		"Null",
 		"Backward",
 		"Jump To",
-		"Idle"
+		"Idle",
+		"Jp Target",
+		"Cp Target"
 };
 
 char* plan_mode_lists[] = {
@@ -410,7 +412,7 @@ void UI_PlanSetDisplayInit() {
 	planset_head.align_y = DISP_ALIGN_CENTER;
 }
 
-void UI_PlanSetDisplay(int8_t num, Action_typedef* plan, uint8_t num_index) {
+void UI_PlanSetDisplay(int8_t num, Action_typedef* plan, int num_index) {
 	char buff[22];
 	static int8_t first_list = 0;
 	uint8_t temp = (num == -1);
@@ -508,12 +510,22 @@ void UI_PlanSetDisplay(int8_t num, Action_typedef* plan, uint8_t num_index) {
 			DISP_DisplayText(&planset_list_name[i], " Delete");
 			DISP_DisplayText(&planset_list_value[i], " ");
 			break;
+		case 13:
+			DISP_DisplayText(&planset_list_name[i], " Kp");
+			if(plan->kp == 0) {
+				DISP_DisplayText(&planset_list_value[i], "Default");
+			}
+			else {
+				sprintf(buff, "%2.2f", (float)plan->kp/10.00);
+				DISP_DisplayText(&planset_list_value[i], buff);
+			}
+			break;
 		}
 	}
 }
 
 UI_Menu_Lists UI_PlanSet() {
-	uint8_t num_index = plan.checkpoint[num_checkpoint];
+	uint16_t num_index = plan.checkpoint[num_checkpoint];
 	Action_typedef plan_set = GetAction(num_index);
 	int8_t num = -1;
 	uint32_t tick;
@@ -545,12 +557,12 @@ UI_Menu_Lists UI_PlanSet() {
 		}
 		if(num != -1) {
 			if(bt & SW_UP_PRESS) {
-				if(num != 0) num--; else num=12;
+				if(num != 0) num--; else num=13;
 				bt_status = 0;
 				goto plan_set;
 			}
 			else if(bt & SW_DW_PRESS) {
-				if(num != 12) num++; else num=0;
+				if(num != 13) num++; else num=0;
 				bt_status = 0;
 				goto plan_set;
 			}
@@ -799,6 +811,20 @@ UI_Menu_Lists UI_PlanSet() {
 				goto plan_set;
 			}
 			break;
+		case 13:
+			if(bt & SW_LF_PRESS) {
+				if(plan_set.kp != 0) plan_set.kp--; else plan_set.kp=255;
+				bt_status = 1;
+				change_status = 1;
+				goto plan_set;
+			}
+			if(bt & SW_RG_PRESS) {
+				if(plan_set.kp != 255) plan_set.kp++; else plan_set.kp=0;
+				bt_status = 1;
+				change_status = 1;
+				goto plan_set;
+			}
+			break;
 		}
 	}
 	return UI_IDLE;
@@ -1019,7 +1045,7 @@ void UI_CPDisplayInit() {
 	cp_head.align_y = DISP_ALIGN_CENTER;
 }
 
-void UI_CPDisplay(uint8_t num, uint8_t* num_value) {
+void UI_CPDisplay(uint8_t num, uint16_t* num_value) {
 	static int8_t first_list = 0;
 	if(num - first_list >= 4) first_list = (num-3);
 	else if(num < first_list) first_list = num;
@@ -1470,6 +1496,7 @@ UI_Menu_Lists UI_Run() {
 	static uint8_t bt;
 
 	char buff[22];
+	HAL_Delay(500);
 	Plan_Start();
 	ui_run:
 	Plan_UIRoutine();
@@ -1477,7 +1504,12 @@ UI_Menu_Lists UI_Run() {
 	DISP_DisplayText(&home_status, buff);
 	sprintf(buff, "Act ~ %s", plan_act_lists[plan_active.act]);
 	DISP_DisplayText(&cp_menu[2], buff);
-	sprintf(buff, "%3i | %-3i", (int16_t)motor[1].pwm, (int16_t)motor[0].pwm);
+	if(motor[0].mode == MOTOR_MODE_OPEN) {
+		sprintf(buff, "%3i | %-3i", (int16_t)motor[1].pwm, (int16_t)motor[0].pwm);
+	}
+	else {
+		sprintf(buff, "%3i | %-3i", (int16_t)motor[1].vel_sp, (int16_t)motor[0].vel_sp);
+	}
 	DISP_DisplayText(&cp_menu[3], buff);
 	while(1) {
 		if((main_flag & MAIN_FLAG_RUN) == 0) break;

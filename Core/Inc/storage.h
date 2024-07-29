@@ -10,11 +10,11 @@
 
 #include "main.h"
 
-#define MAX_PLAN				15
+#define MAX_PLAN				8
 #define MAX_ACTION_PER_PLAN		200
-#define DEF_ACTION_PER_PLAN		100
+#define DEF_ACTION_PER_PLAN		400
 #define MAX_CHECKPOINT			20
-#define BUFFER_SIZE				10
+#define BUFFER_SIZE				50
 
 #define INIT_ADDR_START				0x0000
 #define INIT_ADDR_END				0x000F
@@ -35,7 +35,7 @@
 #define ACTION_SIZE		16
 #define PLAN_INIT_SIZE	64
 
-#define NUM_CHECKPOINT 	20
+#define NUM_CHECKPOINT 	15
 
 #define STO_FLAG_BUFF_FULL 	0x01
 #define STO_FLAG_BUFF_EMPTY 0x02
@@ -62,12 +62,13 @@ typedef struct {
 	uint8_t boost_speed;
 	uint8_t unit_speed;
 	uint8_t status;
+	uint8_t kp;
 } Action_typedef;
 
 typedef struct {
 	uint8_t id;
-	uint8_t num_action;
-	uint8_t checkpoint[NUM_CHECKPOINT];
+	uint16_t num_action;
+	uint16_t checkpoint[NUM_CHECKPOINT];
 	uint8_t speed;
 	uint8_t turn_speed;
 	float kpid[3];
@@ -85,9 +86,9 @@ typedef struct {
 //	float kpid[3];
 //} Plan_typedef;
 extern uint8_t num_plan;
-extern uint8_t num_index;
+extern int num_index;
 extern uint8_t num_checkpoint;
-extern uint8_t max_index;
+extern int max_index;
 extern uint8_t plan_speed;
 extern uint8_t plan_turn_speed;
 extern Action_typedef plan_active;
@@ -97,8 +98,8 @@ void Storage_ResetPlan();
 void Storage_ResetMemory();
 uint8_t Storage_Init();
 uint8_t Storage_PlanInit();
-Action_typedef GetAction(uint8_t index);
-void SetAction(Action_typedef act, uint8_t index);
+Action_typedef GetAction(int index);
+void SetAction(Action_typedef act, int index);
 void Storage_GetADCThreshold();
 void Storage_SetADCThreshold();
 uint8_t Storage_GetPlan(uint8_t n_plan);
@@ -109,12 +110,12 @@ void Storage_SetPID();
 void Storage_SetSpeed();
 uint8_t GetActionSequence();
 void GetActionSequenceRoutine();
-void GetActionSequenceInit(uint8_t num);
-Action_typedef GetActionOther(uint8_t plan, uint8_t index);
-void SetActionOther(Action_typedef act, uint8_t index);
-void SetActionOther2(uint8_t n_plan, Action_typedef act, uint8_t index);
+void GetActionSequenceInit(int num);
+Action_typedef GetActionOther(uint8_t plan, int index);
+void SetActionOther(Action_typedef act, int index);
+void SetActionOther2(uint8_t n_plan, Action_typedef act, int index);
 void Storage_CopyPlan(uint8_t plan_dest);
-void Storage_InsertAction(uint8_t index);
-void Storage_DeleteAction(uint8_t index);
+void Storage_InsertAction(int index);
+void Storage_DeleteAction(int index);
 
 #endif /* INC_STORAGE_H_ */

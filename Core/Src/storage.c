@@ -13,17 +13,17 @@
 uint8_t num_plan;
 uint16_t num_plan_addr;
 uint8_t num_checkpoint;
-uint8_t num_index;
+int num_index;
 
-uint8_t max_index = DEF_ACTION_PER_PLAN-1;
+int max_index = DEF_ACTION_PER_PLAN-1;
 
 uint8_t init_buff[PAGE_SIZE];
 
 uint8_t last_index = 0;
 Action_typedef plan_buffer[BUFFER_SIZE];
-uint8_t buff_index = 0;
-uint8_t plan_buffer_f = 0;
-uint8_t plan_buffer_i = 0;
+int buff_index = 0;
+int plan_buffer_f = 0;
+int plan_buffer_i = 0;
 Action_typedef plan_active;
 const Action_typedef plan_default = {
 		.act = 0,
@@ -40,11 +40,13 @@ const Action_typedef plan_default = {
 		.status = 0,
 };
 
+//Action_typedef plan_container[DEF_ACTION_PER_PLAN];
+
 uint8_t storage_flag = 0;
 
 Plan_typedef plan;
 
-Action_typedef GetAction(uint8_t index) {
+Action_typedef GetAction(int index) {
 	index = index%DEF_ACTION_PER_PLAN;
 	uint8_t buff[ACTION_SIZE];
 	uint16_t act_addr = num_plan_addr + PLAN_INIT_SIZE + (index * ACTION_SIZE) ;
@@ -54,7 +56,7 @@ Action_typedef GetAction(uint8_t index) {
 	return plan_active;
 }
 
-void SetAction(Action_typedef act, uint8_t index) {
+void SetAction(Action_typedef act, int index) {
 	index = index%DEF_ACTION_PER_PLAN;
 	uint8_t buff[ACTION_SIZE];
 	plan_active = act;
@@ -68,9 +70,9 @@ void Storage_ResetPlan() {
 	Plan_typedef temp;
 	temp.id = num_plan | 0x80;
 	temp.speed = 40;
-	temp.num_action = 100;
+	temp.num_action = DEF_ACTION_PER_PLAN;
 	temp.turn_speed = 10;
-	memset(temp.checkpoint, 0, NUM_CHECKPOINT);
+	memset(temp.checkpoint, 0, NUM_CHECKPOINT*sizeof(temp.checkpoint[0]));
 	temp.kpid[0] = 4.71428;
 	temp.kpid[1] = 0;
 	temp.kpid[2] = 0;
@@ -176,16 +178,16 @@ void Storage_SetPlanOther(Plan_typedef* ptr_plan, uint8_t n_plan) {
 }
 
 void Storage_GetCheckpoint() {
-	uint8_t offset = plan.checkpoint - (uint8_t*)&plan;
+	uint8_t offset = (uint8_t*)plan.checkpoint - (uint8_t*)&plan;
 	uint8_t plan_page = (num_plan_addr)/PAGE_SIZE;
 	while(!EEP_ReadyToWrite());
-	EEP_ReadMem(plan_page+offset, plan.checkpoint, NUM_CHECKPOINT);
+	EEP_ReadMem(plan_page+offset, (uint8_t*)plan.checkpoint, NUM_CHECKPOINT*2);
 }
 
 void Storage_SetCheckpoint() {
 	uint8_t offset = (uint8_t*)&plan.checkpoint - (uint8_t*)&plan;
 	while(!EEP_ReadyToWrite());
-	EEP_WriteMem(num_plan_addr+offset, plan.checkpoint, NUM_CHECKPOINT);
+	EEP_WriteMem(num_plan_addr+offset, (uint8_t*)plan.checkpoint, NUM_CHECKPOINT*2);
 }
 
 void Storage_SetPID() {
@@ -213,7 +215,7 @@ void Storage_SetSpeed() {
 	EEP_WriteMem(num_plan_addr+offset, (uint8_t*)&plan.acc, sizeof(float));
 }
 
-Action_typedef GetActionOther(uint8_t plan, uint8_t index) {
+Action_typedef GetActionOther(uint8_t plan, int index) {
 	index = index%DEF_ACTION_PER_PLAN;
 	uint16_t addr = *(uint16_t*)&init_buff[PTR_MEMORY_ADDR_START+plan*2];
 	uint8_t buff[ACTION_SIZE];
@@ -223,7 +225,7 @@ Action_typedef GetActionOther(uint8_t plan, uint8_t index) {
 	return *(Action_typedef*)&buff;
 }
 
-void SetActionOther(Action_typedef act, uint8_t index) {
+void SetActionOther(Action_typedef act, int index) {
 	index = index%DEF_ACTION_PER_PLAN;
 	uint8_t buff[ACTION_SIZE];
 	uint16_t act_addr = num_plan_addr + PLAN_INIT_SIZE + (index * ACTION_SIZE);
@@ -232,7 +234,7 @@ void SetActionOther(Action_typedef act, uint8_t index) {
 	EEP_WriteMem(act_addr, buff, ACTION_SIZE);
 }
 
-void SetActionOther2(uint8_t n_plan, Action_typedef act, uint8_t index) {
+void SetActionOther2(uint8_t n_plan, Action_typedef act, int index) {
 	index = index%DEF_ACTION_PER_PLAN;
 	uint8_t buff[ACTION_SIZE];
 	uint16_t n_plan_addr = *(uint16_t*)&init_buff[PTR_MEMORY_ADDR_START+n_plan*2];
@@ -268,7 +270,7 @@ void GetActionSequenceRoutine() {
 		(plan_buffer_i == 0 && (plan_buffer_f != BUFFER_SIZE-1)) ) {
 		if(buff_index < plan.num_action-2) {
 			buff_index++;
-			uint8_t index_f = plan_buffer_f;
+			int index_f = plan_buffer_f;
 			if(index_f>=BUFFER_SIZE-1) index_f=0; else index_f++;
 			plan_buffer[index_f] = GetActionOther(num_plan, buff_index);
 			if(plan_buffer[index_f].act == 11) {
@@ -286,7 +288,7 @@ void GetActionSequenceRoutine() {
 	}
 }
 
-void GetActionSequenceInit(uint8_t num) {
+void GetActionSequenceInit(int num) {
 	GetAction(num);
 	buff_index = num;
 	plan_buffer_i = 0;
@@ -296,7 +298,7 @@ void GetActionSequenceInit(uint8_t num) {
 	storage_flag |= STO_FLAG_BUFF_EMPTY;
 }
 
-void Storage_InsertAction(uint8_t index) {
+void Storage_InsertAction(int index) {
 	Action_typedef temp;
 	for(int i=plan.num_action-1; i>index; i--) {
 		temp = GetActionOther(num_plan, i-1);
@@ -304,7 +306,7 @@ void Storage_InsertAction(uint8_t index) {
 	}
 }
 
-void Storage_DeleteAction(uint8_t index) {
+void Storage_DeleteAction(int index) {
 	Action_typedef temp;
 	for(int i=index; i<plan.num_action-1; i++) {
 		temp = GetActionOther(num_plan, i+1);

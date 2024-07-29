@@ -22,7 +22,7 @@
 extern float kp, ki, kd;
 extern float alpha;
 extern Motor_typedef motor[2];
-extern float robot_enc_pos;
+extern int32_t robot_enc_pos;
 extern float robot_enc_yawpos;
 extern int16_t sum_error;
 void Run_Init();

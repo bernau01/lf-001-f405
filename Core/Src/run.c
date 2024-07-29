@@ -13,35 +13,36 @@
 
 Motor_typedef motor[2];
 
-float robot_enc_pos = 0;
+int32_t robot_enc_pos = 0;
 float robot_enc_yawpos = 0;
 
 float temp_yaw_speed;
+float this_accl;
 
 void Run_Init() {
 	memset(motor, 0, sizeof(motor[0])*2);
 
-	motor[0].mode = MOTOR_MODE_OPEN;
+	motor[0].mode = MOTOR_MODE_CLOSE;
 	motor[0].pwm_htim = &htim3;
 	motor[0].ch1 = TIM_CHANNEL_1;
 	motor[0].ch2 = TIM_CHANNEL_2;
 	motor[0].enc_htim = &htim2;
-	motor[0].dir = -1;
+	motor[0].dir = 1;
 	motor[0].pwm_factor = 0.01;
-	motor[0].vel_factor = 0.625;
-	motor[0].kp = 2;
-	motor[0].ki = 15;
+	motor[0].vel_factor = 20;
+	motor[0].kp = 0.2;
+	motor[0].ki = 5;
 	motor[0].filter_alpha = 0.5;
 
 	motor[1].mode = motor[0].mode;
 	motor[1].pwm_htim = &htim3;
-	motor[1].ch1 = TIM_CHANNEL_4;
-	motor[1].ch2 = TIM_CHANNEL_3;
+	motor[1].ch1 = TIM_CHANNEL_3;
+	motor[1].ch2 = TIM_CHANNEL_4;
 	motor[1].enc_htim = &htim4;
-	motor[1].dir = 1;
+	motor[1].dir = -1;
 	motor[1].pwm_factor = 0.0097;
-	motor[1].vel_factor = 0.625;
-	motor[1].kp = motor[0].kp;
+	motor[1].vel_factor = 20;
+	motor[1].kp = 0.2;
 	motor[1].ki = motor[0].ki;
 	motor[1].filter_alpha = motor[0].filter_alpha;
 
@@ -223,9 +224,17 @@ float Run_YawSpeed(float period, float _speed, uint8_t flag) {
 //		p = _speed * PID_KKP * (float)error;
 //		i = 0;
 //		d = _speed * PID_KKD * (float)div_error / period;
-		p = (0.09*_speed + 0.8833) * (float)error;
-		i = (0.03*_speed + 0.6833) * (float)sum_error * period;
-		d = (0.7433*exp(0.1099*_speed)) * (float)div_error / period;
+//		p = (0.09*_speed + 0.8833) * (float)error;
+//		i = (0.03*_speed + 0.6833) * (float)sum_error * period;
+//		d = (0.7433*exp(0.1099*_speed)) * (float)div_error / period;
+		p = _speed * 0.075 * (float)error;
+		i = 0;
+		d = 0;
+	}
+	else if(flag == 2) {
+		p = kp * (float)error;
+		i = 0;
+		d = 0;
 	}
 	else {
 		p = kp * (float)error;
@@ -240,8 +249,26 @@ float Run_YawSpeed(float period, float _speed, uint8_t flag) {
 	return mv;
 }
 
+void Run_SetKP(float kp) {
+
+}
+
 
 void Run_LineTracing(float speed, float period, uint8_t flag) {
+
+//	static float last_speed = 0;
+//
+//	float temp_accl = this_accl * period * 10.00;
+//
+//	if(speed > last_speed+temp_accl && temp_accl != 0) {
+//		last_speed += temp_accl;
+//	}
+//	else {
+//		last_speed = speed;
+//	}
+//
+//	speed = last_speed;
+
 	float yaw_speed = Run_YawSpeed(period, speed, flag);
 	float temp_speed = speed;
 	if(yaw_speed > 99) yaw_speed = 99;
@@ -267,8 +294,9 @@ void Run_SetMotorSpeed(float speed_l, float speed_r) {
 }
 
 void Run_SetMotorAccl(float accl) {
-	Motor_SetAccl(&MOTOR_R, accl);
-	Motor_SetAccl(&MOTOR_L, accl);
+//	Motor_SetAccl(&MOTOR_R, accl);
+//	Motor_SetAccl(&MOTOR_L, accl);
+	this_accl = accl;
 }
 
 void Run_SetReverseSpeed(float factor) {

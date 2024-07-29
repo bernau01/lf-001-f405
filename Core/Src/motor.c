@@ -105,11 +105,11 @@ void Motor_ControlRoutine(Motor_typedef* hmot, float __period) {
 	switch(hmot->mode) {
 	case MOTOR_MODE_CLOSE:
 		error = hmot->vel_sp - hmot->enc_vel;
-		if(hmot->vel_sp == 0) hmot->sum_error=0;
-		if((hmot->vel_sp > 0 && hmot->pwm < 0)||(hmot->vel_sp < 0 && hmot->pwm > 0)) hmot->sum_error=0;
+//		if(hmot->vel_sp == 0) hmot->sum_error=0;
+//		if((hmot->vel_sp > 0 && hmot->pwm < 0)||(hmot->vel_sp < 0 && hmot->pwm > 0)) hmot->sum_error=0;
 		mv = (hmot->kp * error) + (hmot->ki*hmot->sum_error*__period);
-		if(mv>90) {
-			hmot->sum_error*=0.9;
+		if(mv>90 || mv<-90) {
+//			hmot->sum_error*=0.9;
 		}
 		else {
 			hmot->sum_error += error;
